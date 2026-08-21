@@ -3,16 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="description" content="Progressive Web App con React, TypeScript y Vite" />
+    <meta name="theme-color" content="#3b63f2" />
+    <meta name="description" content="San Gabriel App — Panadería San Gabriel" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="San Gabriel App" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>San Gabriel App</title>
+    <script>
+      // Aplica el tema (claro/oscuro) ANTES del primer render, para que
+      // no haya un parpadeo del tema equivocado al cargar la página.
+      // Esta es la única lógica de tema que vive fuera de React —
+      // src/shared/theme/useTheme.ts lee este mismo estado al montar.
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored ? stored === 'dark' : prefersDark;
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (e) {
+          /* localStorage no disponible (modo privado, etc.) — usa claro por defecto */
+        }
+      })();
+    </script>
   </head>
-  <body class="bg-slate-950 text-slate-50 antialiased overscroll-none">
+  <body class="bg-bg text-ink antialiased overscroll-none">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

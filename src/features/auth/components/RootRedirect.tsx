@@ -1,8 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { getDefaultRoute } from '@/shared/lib/routing';
 
+// "Inicio" es de acceso libre para cualquier usuario con sesión (no
+// depende de permisos por rol), así que siempre es un aterrizaje seguro.
 export function RootRedirect() {
-  const permisos = useAuthStore((state) => state.permisos);
-  return <Navigate to={getDefaultRoute(permisos)} replace />;
+  return <Navigate to="/inicio" replace />;
 }

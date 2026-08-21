@@ -3,9 +3,30 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   --header-height: 64px;
   --bottom-nav-height: 64px;
+
+  /* Paleta clara: minimalista, fondos casi blancos con un gris muy
+     suave para separar superficies sin recurrir a bordes duros. */
+  --color-bg: 248 250 252;        /* slate-50 */
+  --color-surface: 255 255 255;   /* white */
+  --color-surface-2: 241 245 249; /* slate-100 */
+  --color-line: 226 232 240;      /* slate-200 */
+  --color-ink: 15 23 42;          /* slate-900 */
+  --color-muted: 100 116 139;     /* slate-500 */
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Paleta oscura original del proyecto. */
+  --color-bg: 2 6 23;             /* slate-950 */
+  --color-surface: 15 23 42;      /* slate-900 */
+  --color-surface-2: 30 41 59;    /* slate-800 */
+  --color-line: 30 41 59;         /* slate-800 */
+  --color-ink: 248 250 252;       /* slate-50 */
+  --color-muted: 148 163 184;     /* slate-400 */
 }
 
 * {
@@ -20,16 +41,19 @@ body,
 
 body {
   overscroll-behavior-y: none;
+  transition: background-color 0.15s ease;
 }
 
-/* Utilidades reutilizables para no repetir clases largas de Tailwind */
+/* Utilidades reutilizables para no repetir clases largas de Tailwind.
+   Usan los tokens semánticos (bg/surface/line/ink/muted) para que cada
+   componente funcione igual en modo claro y oscuro sin duplicar clases. */
 @layer components {
   .app-container {
     @apply mx-auto w-full max-w-screen-lg px-4;
   }
 
   .card {
-    @apply rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm backdrop-blur;
+    @apply rounded-2xl border border-line bg-surface/90 p-4 shadow-sm shadow-slate-950/[0.03] backdrop-blur;
   }
 
   .btn-primary {
@@ -40,15 +64,15 @@ body {
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700
-      bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 transition-colors
-      hover:bg-slate-800 active:bg-slate-700
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line
+      bg-surface px-4 py-2.5 text-sm font-medium text-ink transition-colors
+      hover:bg-surface-2 active:bg-surface-2
       disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2.5 text-sm
-      text-slate-100 placeholder:text-slate-500
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm
+      text-ink placeholder:text-muted
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
   }
 }
@@ -59,7 +83,7 @@ body {
     width: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-slate-700;
+    @apply rounded-full bg-line;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;

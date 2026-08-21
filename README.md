@@ -79,7 +79,7 @@ y abre esa URL desde tu teléfono en la misma red (o despliega a Vercel/Netlify)
 Integrado contra tu API real (`auth.route.js` / `auth.controller.js` /
 `auth.service.js` / `auth/jwt.js`):
 
-- `POST /auth/login` con body `{ usuario, contrasena }`.
+- `POST /login` con body `{ usuario, contrasena }`.
 - Respuesta (envelope estándar de tu API):
   ```json
   {
@@ -123,26 +123,56 @@ Integrado contra tu API real (`auth.route.js` / `auth.controller.js` /
 (`src/features/auth/types/auth.types.ts`) son un placeholder razonable —
 si me compartes el DAO o un ejemplo real del JWT decodificado, los afino.
 
-## Navegación dinámica basada en permisos
+## Menú agrupado, basado en permisos (por rol)
 
-El menú (Sidebar en desktop, barra inferior + "Más" en móvil) **no está
-harcodeado** — se genera a partir de `permisos` (array del JWT decodificado,
-cada uno con `idPermiso`, `nombrePermiso`, `rutaAcceso`). Como los permisos
-son **por rol**, cada usuario ve solo lo que su rol tiene asignado, y esto
-se ajusta solo cuando cambian los permisos en el backend — no hay que
-tocar nada en el frontend.
+El menú vive en **un solo lugar**: `src/shared/layout/menuSchema.ts`. Ahí se
+define el orden, la agrupación y el ícono de cada módulo. Sidebar, BottomNav
+y "Más" (móvil) solo *renderizan* ese schema — no hay listas duplicadas.
 
-- `src/shared/layout/permisoIcons.ts` — mapea cada `rutaAcceso` a un ícono
-  de `lucide-react`; si agregas un permiso nuevo en el backend y no está en
-  el mapa, usa un ícono genérico automáticamente (no rompe nada).
-- **Desktop** (`Sidebar.tsx`): lista todos los permisos del usuario, con
-  scroll si son muchos.
-- **Móvil** (`BottomNav.tsx`): muestra los primeros 4 permisos + botón
-  "Más" que lleva a `/mas` (`MasPage.tsx`), con el resto en una grilla.
-- **Aterrizaje dinámico** (`RootRedirect.tsx` / `getDefaultRoute()`): al
-  loguear o entrar a `/`, se manda al usuario a su **primer permiso real**
-  — ya no se asume que todos tienen "Dashboard". Si el rol no tiene ningún
-  permiso, ve `/sin-permisos`.
+**Orden y agrupación actual:**
+
+```
+Inicio                      (acceso libre, no depende de permisos)
+Dashboard
+Inventarios                 (grupo)
+  ├─ Control de stock
+  ├─ Descuento de stock
+  └─ Traslados
+Órdenes de producción
+Pedidos especiales
+Ventas
+Reportes
+Configuraciones             (grupo)
+  ├─ Usuarios
+  ├─ Roles
+  ├─ Sucursales
+  ├─ Productos
+  ├─ Materia prima
+  ├─ Mi perfil              (acceso libre, no depende de permisos)
+  ├─ Encuestas
+  ├─ Activar fecha de producción
+  ├─ Notificaciones
+  └─ Categorías
+```
+
+- `getVisibleMenu(permisos)` filtra el schema completo contra los permisos
+  reales del rol (por `rutaAcceso`). Un link sin `rutaAcceso` (Inicio, Mi
+  perfil) es siempre visible. Un grupo desaparece solo si **ninguno** de
+  sus items quedó visible para ese rol.
+- **Desktop** (`Sidebar.tsx`): ancho reducido (`w-56`), filas compactas, y
+  los grupos son **colapsables** (acordeón) — arrancan cerrados salvo que
+  la ruta activa esté dentro, así el menú ocupa mucho menos espacio
+  vertical que antes.
+- **Móvil** (`BottomNav.tsx`): toma los primeros 4 links de primer nivel
+  del schema (según los permisos del usuario) para la barra inferior, y
+  todo lo demás — incluidos los grupos completos — vive detrás de "Más"
+  (`MasPage.tsx`), que reproduce la misma agrupación en secciones.
+- **Aterrizaje** (`RootRedirect.tsx`): al loguear o entrar a `/`, siempre
+  se manda a `/inicio` — es de acceso libre, así que es un aterrizaje
+  seguro para cualquier rol, tenga los permisos que tenga.
+- Cada módulo nuevo se agrega en `menuSchema.ts` (como link suelto o
+  dentro de un grupo) — Sidebar, BottomNav y "Más" lo reflejan
+  automáticamente, sin tocar esos tres archivos.
 
 ### El menú oculta, pero NO protege — por eso cada ruta se protege aparte
 
@@ -164,11 +194,53 @@ mano. Por eso cada `<Route>` de módulo se envuelve en
 Si el usuario no tiene ese permiso, ve `/sin-acceso` en vez del módulo,
 sin importar cómo haya llegado a esa URL. **Este patrón es obligatorio
 para cada módulo nuevo que agreguemos** (ver el comentario de ejemplo en
-`app/routes.tsx`).
+`app/routes.tsx`). `/inicio` y `/perfil` son la excepción a propósito —
+no están atados a un permiso del backend.
 
 - Cualquier permiso que el usuario sí tiene pero cuyo módulo aún no se ha
   construido (todavía sin `<Route>`) cae en una pantalla "en construcción"
   (`ComingSoonPage.tsx`).
+
+## Convención de rutas de API
+
+El `baseURL` del cliente HTTP ya incluye `/api` (ej.
+`http://localhost:3000/api`). **Cada servicio solo agrega el nombre de su
+ruta**, sin prefijos como `/auth`:
+
+```ts
+httpClient.post('/login', payload);   // -> http://localhost:3000/api/login
+httpClient.get('/productos');         // -> http://localhost:3000/api/productos
+```
+
+Esta es la convención para todos los módulos que construyamos de aquí en
+adelante.
+
+## Modo claro / oscuro
+
+Implementado desde la base con tokens semánticos, no colores fijos:
+
+- `tailwind.config.ts` define clases (`bg`, `surface`, `surface-2`, `line`,
+  `ink`, `muted`) cuyo **valor real** viene de variables CSS.
+- `src/styles/globals.css` — define esas variables dos veces: una vez en
+  `:root` (tema claro, paleta minimalista con blancos y grises suaves) y
+  otra en `.dark` (tema oscuro, la paleta original del proyecto).
+- Todos los componentes usan las clases semánticas (`bg-surface`,
+  `text-ink`, `border-line`, etc.) — nunca `slate-900` directo — así que
+  cambiar de tema no requiere tocar componentes nuevos, solo seguir la
+  misma convención.
+- `src/shared/theme/useTheme.ts` — store de zustand que alterna la clase
+  `dark` en `<html>` y persiste la preferencia en `localStorage`.
+- `src/shared/theme/ThemeToggle.tsx` — botón con íconos de sol/luna.
+  Ya está colocado en el Sidebar (desktop), el Topbar (móvil) y el login
+  (arriba a la derecha, para poder cambiarlo antes de iniciar sesión).
+- `index.html` incluye un script inline que aplica el tema (guardado o
+  según preferencia del sistema) **antes** del primer render, para evitar
+  el parpadeo del tema equivocado al cargar.
+
+**Para cada módulo nuevo:** usa siempre las clases semánticas
+(`bg-surface`, `text-ink`, `text-muted`, `border-line`, `bg-surface-2`)
+en vez de `slate-*` directo, para que funcione en ambos temas sin
+esfuerzo extra.
 
 ## Cómo seguimos
 

@@ -1,9 +1,11 @@
 import { httpClient } from '@/shared/api/httpClient';
 import type { LoginRequest, LoginResponse } from '../types/auth.types';
 
-// Ruta real vista en auth.route.js: authRoute.post("/login", ...)
-// montada bajo /auth -> junto con el baseURL (.../api) queda /api/auth/login
+// El baseURL ya incluye /api (ej. http://localhost:3000/api), así que
+// aquí solo va el nombre de la ruta — sin /auth ni otro prefijo.
+// Convención para TODOS los servicios de aquí en adelante:
+// httpClient.<método>('/nombre-de-la-ruta', ...)
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
-  const { data } = await httpClient.post<LoginResponse>('/auth/login', payload);
+  const { data } = await httpClient.post<LoginResponse>('/login', payload);
   return data;
 }

@@ -1,26 +1,17 @@
-import { useAuthStore } from '@/features/auth/store/authStore';
-
+// Dashboard — pantalla separada de "Inicio". Placeholder hasta que
+// definamos qué métricas/indicadores mostrar aquí.
 export function HomePage() {
-  const user = useAuthStore((state) => state.user);
-
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-50">
-          Bienvenido{user ? `, ${user.nombre}` : ''}
-        </h1>
-        <p className="text-sm text-slate-400">
-          {user?.rol && user?.sucursal
-            ? `${user.rol} · ${user.sucursal}`
-            : 'Este es el punto de partida del proyecto.'}
-        </p>
+        <h1 className="text-2xl font-semibold text-ink">Dashboard</h1>
+        <p className="text-sm text-muted">Aquí irán tus métricas e indicadores clave.</p>
       </div>
 
       <div className="card">
-        <p className="text-sm text-slate-300">
-          Dime qué módulo quieres construir ahora (ej. productos, ventas,
-          órdenes de producción) y seguimos integrándolo contra tu API,
-          usando la misma rutaAcceso que ya trae su permiso.
+        <p className="text-sm text-muted">
+          Cuando definamos qué KPIs mostrar (ventas del día, producción,
+          stock crítico, etc.) los agregamos aquí.
         </p>
       </div>
     </div>

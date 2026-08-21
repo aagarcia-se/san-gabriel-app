@@ -7,12 +7,12 @@ interface SpinnerProps {
 
 export function Spinner({ className, label = 'Cargando…' }: SpinnerProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-10 text-slate-400">
+    <div className="flex flex-col items-center justify-center gap-2 py-10 text-muted">
       <div
         role="status"
         aria-label={label}
         className={cn(
-          'h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-brand-500',
+          'h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand-500',
           className,
         )}
       />

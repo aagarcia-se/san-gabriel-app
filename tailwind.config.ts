@@ -19,6 +19,16 @@ export default {
           900: '#212c80',
           950: '#171b4e',
         },
+        // Tokens semánticos: mismo nombre de clase en toda la app,
+        // el VALOR cambia solo con la clase "dark" en <html> (ver
+        // globals.css y src/shared/theme/useTheme.ts). Así cada
+        // componente se escribe una sola vez y funciona en ambos temas.
+        bg: 'rgb(var(--color-bg) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        'surface-2': 'rgb(var(--color-surface-2) / <alpha-value>)',
+        line: 'rgb(var(--color-line) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
       },
       fontFamily: {
         sans: [

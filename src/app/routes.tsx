@@ -3,7 +3,9 @@ import { AppShell } from '@/shared/layout/AppShell';
 import { ComingSoonPage } from '@/shared/ui/ComingSoonPage';
 import { SinAccesoPage } from '@/shared/ui/SinAccesoPage';
 import { SinPermisosPage } from '@/shared/ui/SinPermisosPage';
+import { InicioPage } from '@/features/inicio/pages/InicioPage';
 import { HomePage } from '@/features/home/pages/HomePage';
+import { PerfilPage } from '@/features/perfil/pages/PerfilPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -23,9 +25,14 @@ export function AppRoutes() {
           <ProtectedRoute>
             <AppShell>
               <Routes>
-                {/* "/" ya no asume Dashboard: manda a la primera ruta
-                    que el rol del usuario realmente tenga permitida. */}
                 <Route path="/" element={<RootRedirect />} />
+
+                {/* "Inicio" y "Mi perfil" son de acceso libre: cualquier
+                    usuario con sesión los ve, sin importar su rol/permisos
+                    (no están atados a un permiso del backend). */}
+                <Route path="/inicio" element={<InicioPage />} />
+                <Route path="/perfil" element={<PerfilPage />} />
+
                 <Route path="/sin-permisos" element={<SinPermisosPage />} />
                 <Route path="/sin-acceso" element={<SinAccesoPage />} />
                 <Route path="/mas" element={<MasPage />} />

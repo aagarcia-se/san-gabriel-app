@@ -13,11 +13,11 @@ export function SinPermisosPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
-      <Inbox className="h-10 w-10 text-slate-500" />
-      <p className="text-sm font-medium text-slate-300">
+      <Inbox className="h-10 w-10 text-muted" />
+      <p className="text-sm font-medium text-muted">
         Tu usuario no tiene módulos asignados todavía.
       </p>
-      <p className="max-w-xs text-sm text-slate-500">
+      <p className="max-w-xs text-sm text-muted">
         Contacta a un administrador para que asigne los permisos
         correspondientes a tu rol.
       </p>
