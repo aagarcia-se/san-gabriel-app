@@ -1,11 +1,32 @@
-// Tu API responde siempre con este sobre (visto en auth.controller.js):
-// { status: 200, message: "Consulta exitosa", <dataKey>: <payload> }
-// Lo usamos como base genérica para tipar cada endpoint.
-export interface ApiEnvelope<T, K extends string> {
+/**
+ * Sobre estándar de respuesta de la API.
+ *
+ * Ejemplo:
+ * {
+ *   status: 200,
+ *   message: "Consulta exitosa",
+ *   usuario: { ... }
+ * }
+ */
+export interface ApiEnvelope {
   status: number;
   message: string;
 }
 
-export type WithPayload<K extends string, T> = ApiEnvelope<T, K> & {
-  [key in K]: T;
+/**
+ * Agrega dinámicamente el payload utilizando el nombre
+ * de propiedad definido por cada endpoint.
+ *
+ * Ejemplo:
+ * WithPayload<'usuario', Usuario>
+ *
+ * genera:
+ * {
+ *   status: number;
+ *   message: string;
+ *   usuario: Usuario;
+ * }
+ */
+export type WithPayload<K extends string, T> = ApiEnvelope & {
+  [P in K]: T;
 };
