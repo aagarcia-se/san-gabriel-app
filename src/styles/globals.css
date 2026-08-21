@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --header-height: 64px;
+  --bottom-nav-height: 64px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Utilidades reutilizables para no repetir clases largas de Tailwind */
+@layer components {
+  .app-container {
+    @apply mx-auto w-full max-w-screen-lg px-4;
+  }
+
+  .card {
+    @apply rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm backdrop-blur;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5
+      text-sm font-medium text-white transition-colors
+      hover:bg-brand-500 active:bg-brand-700
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700
+      bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 transition-colors
+      hover:bg-slate-800 active:bg-slate-700
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2.5 text-sm
+      text-slate-100 placeholder:text-slate-500
+      focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+  }
+}
+
+/* Scrollbar sutil para desktop */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-700;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+}
