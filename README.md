@@ -159,20 +159,21 @@ Configuraciones             (grupo)
   reales del rol (por `rutaAcceso`). Un link sin `rutaAcceso` (Inicio, Mi
   perfil) es siempre visible. Un grupo desaparece solo si **ninguno** de
   sus items quedó visible para ese rol.
-- **Los grupos NO son un desplegable** — cada uno (`Inventarios`,
-  `Configuraciones`) tiene su propia ruta (`to` en `menuSchema.ts`, ej.
-  `/inventarios`) y es un click directo a una pantalla dedicada
-  (`MenuGroupPage.tsx`) que muestra sus sub-opciones como tarjetas — el
-  mismo patrón que ya se sentía natural en "Más" para móvil, ahora
-  también en desktop. El Sidebar solo marca el grupo como activo mientras
-  el usuario esté en su pantalla o en cualquiera de sus sub-opciones.
-- **Desktop** (`Sidebar.tsx`): ancho reducido (`w-56`) y filas compactas —
-  como cada entrada (link o grupo) es un solo click, ya no hace falta
-  espacio para desplegar nada.
-- **Móvil** (`BottomNav.tsx`): toma las primeras 4 entradas de primer
-  nivel del schema (según los permisos del usuario) — link o grupo, da
-  igual, ambos son un tap a su pantalla — y el resto vive detrás de "Más"
-  (`MasPage.tsx`), en el mismo grid.
+- **Los grupos NO son un desplegable en desktop** — cada uno
+  (`Inventarios`, `Configuraciones`) tiene su propia ruta (`to` en
+  `menuSchema.ts`, ej. `/inventarios`) y es un click directo a una
+  pantalla dedicada (`MenuGroupPage.tsx`) que muestra sus sub-opciones
+  como tarjetas.
+- **Desktop** (`Sidebar.tsx`): ancho reducido (`w-56`) y filas
+  compactas — cada entrada (link o grupo) es un solo click, así que ya
+  no hace falta espacio para desplegar nada. El grupo se marca activo
+  tanto en su propia pantalla como en cualquiera de sus sub-opciones.
+- **Móvil** (`BottomNav.tsx` / `MasPage.tsx`): distinto de desktop a
+  propósito — la barra inferior toma los primeros 4 **links sueltos**
+  de primer nivel (los grupos no ocupan un ícono ahí), y "Más" muestra
+  todo junto: los links sueltos primero, y cada grupo como su propia
+  sección con encabezado y grid — sin tener que entrar a otra pantalla
+  para ver las sub-opciones, a diferencia de desktop.
 - **Aterrizaje** (`RootRedirect.tsx`): al loguear o entrar a `/`, siempre
   se manda a `/inicio` — es de acceso libre, así que es un aterrizaje
   seguro para cualquier rol, tenga los permisos que tenga.
@@ -272,10 +273,20 @@ UI propia para que sea evidente que se puede instalar:
   el Sidebar (desktop), ambos solo visibles cuando el navegador ofrece
   la instalación nativa.
 
-**Pendiente para que se vea completo:** los íconos reales en
-`public/icons/` (192/512/512-maskable) — sin ellos el prompt de
-instalación puede no aparecer en algunos navegadores, o verse con el
-ícono genérico. Ver `public/icons/README.md`.
+**Íconos:** ya hay 3 PNG placeholder generados en `public/icons/`
+("SG" sobre el color de marca) — sin íconos reales el manifest no es
+válido y el navegador nunca ofrece instalar. Cuando tengas el logo real
+de la panadería, reemplázalos manteniendo el mismo nombre/tamaño (ver
+`public/icons/README.md`).
+
+**Requisito importante — contexto seguro:** el navegador solo ofrece
+instalar en HTTPS, o en `http://localhost` exactamente. Si pruebas
+`npm run dev` desde la misma compu en `http://localhost:5173`, funciona.
+Si abres desde el celular usando la IP de tu red local (ej.
+`http://192.168.x.x:5173`), **no** va a aparecer — no es un problema de
+configuración, es una restricción de seguridad de los navegadores. Para
+probar en el celular, usa `npm run build && npm run preview` en una URL
+`https://` desplegada (ej. Vercel), o una herramienta de túnel HTTPS.
 
 ## Cómo seguimos
 

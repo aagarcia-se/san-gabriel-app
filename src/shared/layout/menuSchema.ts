@@ -212,3 +212,15 @@ export function findVisibleGroup(
     (entry): entry is MenuGroup => entry.type === 'group' && entry.to === to,
   );
 }
+
+// Solo los links sueltos de primer nivel (sin los grupos) — para elegir
+// los primarios del BottomNav en móvil, igual que antes de que los
+// grupos se volvieran navegables en el Sidebar de desktop.
+export function getTopLevelLinks(visibleMenu: MenuEntry[]): MenuLink[] {
+  return visibleMenu.filter((entry): entry is MenuLink => entry.type === 'link');
+}
+
+// Solo los grupos de primer nivel (para las secciones de "Más" en móvil).
+export function getTopLevelGroups(visibleMenu: MenuEntry[]): MenuGroup[] {
+  return visibleMenu.filter((entry): entry is MenuGroup => entry.type === 'group');
+}
