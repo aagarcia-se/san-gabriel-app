@@ -7,12 +7,13 @@
   --header-height: 64px;
   --bottom-nav-height: 64px;
 
-  /* Paleta clara: minimalista, fondos casi blancos con un gris muy
-     suave para separar superficies sin recurrir a bordes duros. */
-  --color-bg: 248 250 252;        /* slate-50 */
-  --color-surface: 255 255 255;   /* white */
-  --color-surface-2: 241 245 249; /* slate-100 */
-  --color-line: 226 232 240;      /* slate-200 */
+  /* Modo claro: el contenido principal es blanco puro y el Sidebar/
+     BottomNav usan un gris muy suave (estilo Dropbox #F6F6F7) para
+     que se note la separación entre "chrome" de navegación y contenido. */
+  --color-bg: 255 255 255;        /* white — lienzo principal */
+  --color-surface: 246 246 247;   /* #F6F6F7 — sidebar/nav/cards */
+  --color-surface-2: 236 236 238; /* gris un paso más oscuro (hover) */
+  --color-line: 226 226 230;      /* borde sutil */
   --color-ink: 15 23 42;          /* slate-900 */
   --color-muted: 100 116 139;     /* slate-500 */
 }
@@ -20,12 +21,14 @@
 .dark {
   color-scheme: dark;
 
-  /* Paleta oscura original del proyecto. */
-  --color-bg: 2 6 23;             /* slate-950 */
-  --color-surface: 15 23 42;      /* slate-900 */
-  --color-surface-2: 30 41 59;    /* slate-800 */
-  --color-line: 30 41 59;         /* slate-800 */
-  --color-ink: 248 250 252;       /* slate-50 */
+  /* Modo oscuro: mismo tono azul-marino en TODO (fondo, sidebar,
+     status bar/manifest de la PWA) para que no haya ningún blanco de
+     por medio — coincide con el diseño del login. */
+  --color-bg: 2 6 23;             /* #020617 */
+  --color-surface: 14 22 40;      /* #0E1628 */
+  --color-surface-2: 20 31 56;    /* #141F38 */
+  --color-line: 27 37 64;         /* #1B2540 */
+  --color-ink: 244 244 242;       /* #F4F4F2 */
   --color-muted: 148 163 184;     /* slate-400 */
 }
 

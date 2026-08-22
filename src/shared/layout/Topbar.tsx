@@ -18,7 +18,7 @@ export function Topbar() {
   return (
     <header
       className="sticky top-0 z-30 flex items-center justify-between border-b border-line
-        bg-bg/90 px-4 backdrop-blur pt-safe-top md:hidden"
+        bg-surface/95 px-4 backdrop-blur pt-safe-top md:hidden"
       style={{ height: 'var(--header-height)' }}
     >
       <span className="text-lg font-semibold text-ink">San Gabriel App</span>
@@ -38,7 +38,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="ml-1 text-sm font-medium text-muted hover:text-red-500 dark:hover:text-red-400"
+          className="ml-1 text-sm font-medium text-muted hover:text-danger-600 dark:hover:text-danger-400"
         >
           Salir
         </button>

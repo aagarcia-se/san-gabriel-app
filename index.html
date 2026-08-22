@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-    <meta name="theme-color" content="#2563eb" />
+    <meta name="theme-color" content="#020617" />
     <meta name="description" content="San Gabriel App — Panadería San Gabriel" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,14 +16,21 @@
       // no haya un parpadeo del tema equivocado al cargar la página.
       // Esta es la única lógica de tema que vive fuera de React —
       // src/shared/theme/useTheme.ts lee este mismo estado al montar.
+      //
+      // Por defecto es OSCURO si no hay preferencia guardada (no se
+      // respeta prefers-color-scheme): así el splash screen, la barra
+      // de estado del teléfono y el contenido son el mismo azul-marino
+      // #020617 desde la primera carga, sin flashes en blanco.
       (function () {
         try {
           var stored = localStorage.getItem('theme');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var isDark = stored ? stored === 'dark' : prefersDark;
+          var isDark = stored ? stored === 'dark' : true;
           document.documentElement.classList.toggle('dark', isDark);
+
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', isDark ? '#020617' : '#ffffff');
         } catch (e) {
-          /* localStorage no disponible (modo privado, etc.) — usa claro por defecto */
+          /* localStorage no disponible (modo privado, etc.) — usa oscuro por defecto */
         }
       })();
     </script>

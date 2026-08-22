@@ -59,7 +59,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-[13px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-red-500 dark:hover:text-red-400"
+          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-[13px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-danger-600 dark:hover:text-danger-400"
         >
           Cerrar sesión
         </button>

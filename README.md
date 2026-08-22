@@ -228,32 +228,57 @@ Implementado desde la base con tokens semánticos, no colores fijos:
 
 - `tailwind.config.ts` define clases (`bg`, `surface`, `surface-2`, `line`,
   `ink`, `muted`) cuyo **valor real** viene de variables CSS.
-- `src/styles/globals.css` — define esas variables dos veces: una vez en
-  `:root` (tema claro, paleta minimalista con blancos y grises suaves) y
-  otra en `.dark` (tema oscuro, la paleta original del proyecto).
+- `src/styles/globals.css` — define esas variables dos veces:
+  - **Claro**: `--color-bg` blanco puro (lienzo principal) y
+    `--color-surface` un gris suave `#F6F6F7` (estilo Dropbox) para
+    Sidebar/Topbar/BottomNav/cards — así el contenido y el "chrome" de
+    navegación se distinguen con un contraste sutil.
+  - **Oscuro**: todo en el mismo azul-marino `#020617` (fondo, sidebar,
+    status bar del teléfono, splash de la PWA) — sin blancos de por
+    medio, coincide exactamente con el diseño del login.
 - Todos los componentes usan las clases semánticas (`bg-surface`,
-  `text-ink`, `border-line`, etc.) — nunca `slate-900` directo — así que
-  cambiar de tema no requiere tocar componentes nuevos, solo seguir la
-  misma convención.
+  `text-ink`, `border-line`, etc.) — nunca un color fijo tipo
+  `slate-900` — así que cambiar de tema no requiere tocar componentes
+  nuevos, solo seguir la misma convención.
 - `src/shared/theme/useTheme.ts` — store de zustand que alterna la clase
-  `dark` en `<html>` y persiste la preferencia en `localStorage`.
-- `src/shared/theme/ThemeToggle.tsx` — botón con íconos de sol/luna.
-  Ya está colocado en el Sidebar (desktop), el Topbar (móvil) y el login
-  (arriba a la derecha, para poder cambiarlo antes de iniciar sesión).
-- `index.html` incluye un script inline que aplica el tema (guardado o
-  según preferencia del sistema) **antes** del primer render, para evitar
-  el parpadeo del tema equivocado al cargar.
+  `dark` en `<html>`, persiste la preferencia en `localStorage`, **y
+  sincroniza el `<meta name="theme-color">`** con el mismo hex del fondo
+  activo — así la barra de estado del teléfono siempre combina con el
+  contenido, sin importar en qué pantalla estés.
+- `src/shared/theme/ThemeToggle.tsx` — botón con íconos de sol/luna. Está
+  en el Sidebar (desktop), el Topbar (móvil) y el login. En el login se
+  le pasan clases que fuerzan su apariencia oscura fija (`className`
+  sobrescribe vía `tailwind-merge`), porque esa pantalla es
+  intencionalmente oscura siempre — ver más abajo.
+- `index.html` incluye un script inline que aplica el tema **y** el
+  `theme-color` **antes** del primer render — evita el parpadeo del tema
+  equivocado (o un flash en blanco) al cargar. **Por defecto es oscuro**
+  si no hay preferencia guardada (no se respeta `prefers-color-scheme`),
+  justamente para que el primer ingreso en el teléfono sea uniforme.
 
 **Para cada módulo nuevo:** usa siempre las clases semánticas
 (`bg-surface`, `text-ink`, `text-muted`, `border-line`, `bg-surface-2`)
-en vez de `slate-*` directo, para que funcione en ambos temas sin
-esfuerzo extra.
+en vez de un color fijo, para que funcione en ambos temas sin esfuerzo
+extra.
 
-**Paleta de marca:** azul corporativo clásico (`brand-*` en
-`tailwind.config.ts`) — el tono típico de paneles administrativos/ERP,
-distinto del azul-índigo original. Como todos los componentes usan la
-clase semántica `brand-*` (nunca un hex a mano), un cambio de paleta a
-futuro es editar un solo lugar: la escala `brand` en `tailwind.config.ts`.
+### El login es intencionalmente oscuro siempre
+
+`LoginPage.tsx` no usa los tokens de tema — tiene fondo fijo `#020617`
+con cuadrícula y glows decorativos, coincide con `--color-bg` del modo
+oscuro. Es una decisión de diseño (común en pantallas de login/marketing
+de apps modernas): la pantalla de login se ve igual sin importar la
+preferencia del usuario; el `ThemeToggle` ahí solo sirve para dejar
+lista la preferencia que aplicará una vez dentro de la app.
+
+### Paleta de marca
+
+Rosa/rojiza (`brand-*` en `tailwind.config.ts`) — se usa en **toda la
+app**, no solo en dark mode. Como todos los componentes usan la clase
+semántica `brand-*` (nunca un hex a mano), un cambio de paleta a futuro
+es editar un solo lugar. Se agregó también `danger-*`, un rojo estándar
+separado de `brand` para mensajes de error — al ser `brand` ahora
+rojizo, reusarlo para errores generaba ambigüedad visual entre "marca" y
+"algo salió mal".
 
 ## Instalación de la PWA (agregar a inicio / barra de direcciones)
 

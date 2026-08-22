@@ -12,10 +12,17 @@ function getInitialTheme(): Theme {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
+// Deben coincidir exactamente con --color-bg de globals.css (light/dark),
+// así el status bar del teléfono siempre es igual al fondo real de la app.
+const THEME_COLOR = { light: '#ffffff', dark: '#020617' } as const;
+
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
   document.documentElement.style.colorScheme = theme;
   localStorage.setItem(STORAGE_KEY, theme);
+
+  const meta = document.querySelector('meta[name="theme-color"]');
+  meta?.setAttribute('content', THEME_COLOR[theme]);
 }
 
 interface ThemeState {
