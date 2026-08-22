@@ -3,21 +3,20 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
-import { getTopLevelLinks, getVisibleMenu } from './menuSchema';
+import { getVisibleMenu } from './menuSchema';
 
 const MAX_PRIMARY_ITEMS = 4;
 
 // Visible solo en móvil (< md). En tablet/desktop se usa Sidebar.
+// Links y grupos se tratan igual aquí — ambos son un solo tap a su
+// propia pantalla (el grupo lleva a la lista de sus sub-opciones).
 export function BottomNav() {
   const location = useLocation();
   const permisos = useAuthStore((state) => state.permisos);
 
   const menu = useMemo(() => getVisibleMenu(permisos), [permisos]);
-  const topLevelLinks = useMemo(() => getTopLevelLinks(menu), [menu]);
-
-  const primaryItems = topLevelLinks.slice(0, MAX_PRIMARY_ITEMS);
-  const hasGroups = menu.some((entry) => entry.type === 'group');
-  const hasMore = topLevelLinks.length > MAX_PRIMARY_ITEMS || hasGroups;
+  const primaryItems = menu.slice(0, MAX_PRIMARY_ITEMS);
+  const hasMore = menu.length > MAX_PRIMARY_ITEMS;
   const isMoreActive = !primaryItems.some((item) => item.to === location.pathname);
 
   return (

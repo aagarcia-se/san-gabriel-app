@@ -159,14 +159,20 @@ Configuraciones             (grupo)
   reales del rol (por `rutaAcceso`). Un link sin `rutaAcceso` (Inicio, Mi
   perfil) es siempre visible. Un grupo desaparece solo si **ninguno** de
   sus items quedó visible para ese rol.
-- **Desktop** (`Sidebar.tsx`): ancho reducido (`w-56`), filas compactas, y
-  los grupos son **colapsables** (acordeón) — arrancan cerrados salvo que
-  la ruta activa esté dentro, así el menú ocupa mucho menos espacio
-  vertical que antes.
-- **Móvil** (`BottomNav.tsx`): toma los primeros 4 links de primer nivel
-  del schema (según los permisos del usuario) para la barra inferior, y
-  todo lo demás — incluidos los grupos completos — vive detrás de "Más"
-  (`MasPage.tsx`), que reproduce la misma agrupación en secciones.
+- **Los grupos NO son un desplegable** — cada uno (`Inventarios`,
+  `Configuraciones`) tiene su propia ruta (`to` en `menuSchema.ts`, ej.
+  `/inventarios`) y es un click directo a una pantalla dedicada
+  (`MenuGroupPage.tsx`) que muestra sus sub-opciones como tarjetas — el
+  mismo patrón que ya se sentía natural en "Más" para móvil, ahora
+  también en desktop. El Sidebar solo marca el grupo como activo mientras
+  el usuario esté en su pantalla o en cualquiera de sus sub-opciones.
+- **Desktop** (`Sidebar.tsx`): ancho reducido (`w-56`) y filas compactas —
+  como cada entrada (link o grupo) es un solo click, ya no hace falta
+  espacio para desplegar nada.
+- **Móvil** (`BottomNav.tsx`): toma las primeras 4 entradas de primer
+  nivel del schema (según los permisos del usuario) — link o grupo, da
+  igual, ambos son un tap a su pantalla — y el resto vive detrás de "Más"
+  (`MasPage.tsx`), en el mismo grid.
 - **Aterrizaje** (`RootRedirect.tsx`): al loguear o entrar a `/`, siempre
   se manda a `/inicio` — es de acceso libre, así que es un aterrizaje
   seguro para cualquier rol, tenga los permisos que tenga.
@@ -241,6 +247,35 @@ Implementado desde la base con tokens semánticos, no colores fijos:
 (`bg-surface`, `text-ink`, `text-muted`, `border-line`, `bg-surface-2`)
 en vez de `slate-*` directo, para que funcione en ambos temas sin
 esfuerzo extra.
+
+## Instalación de la PWA (agregar a inicio / barra de direcciones)
+
+El manifest y el Service Worker ya estaban configurados desde el inicio
+(`vite-plugin-pwa` en `vite.config.ts`) — eso es lo que hace que el
+navegador ofrezca instalar la app (el ícono en la barra de direcciones en
+Chrome/Edge desktop, o el banner nativo en Android). Ahora además hay
+UI propia para que sea evidente que se puede instalar:
+
+- `src/shared/pwa/usePwaInstall.ts` — store con el estado de instalación
+  (si el navegador ofreció instalar, si ya está instalada, si es iOS).
+- `src/shared/pwa/PwaInstallListener.tsx` — capta el evento
+  `beforeinstallprompt` del navegador (Chrome/Edge/Android) y
+  `appinstalled` cuando ya se instaló. Montado una vez en `App.tsx`.
+- `src/shared/pwa/InstallBanner.tsx` — banner flotante arriba, visible en
+  cualquier pantalla (login incluido), con botón "Instalar". Se puede
+  cerrar y no vuelve a aparecer por 14 días (`localStorage`).
+- **iOS/Safari no dispara ese evento** (limitación de Apple, no del
+  proyecto) — ahí el banner muestra los pasos manuales: "Toca Compartir
+  → Agregar a inicio".
+- Botón manual adicional (por si cierran el banner y luego quieren
+  instalar): ícono de descarga en el Topbar (móvil) y "Instalar app" en
+  el Sidebar (desktop), ambos solo visibles cuando el navegador ofrece
+  la instalación nativa.
+
+**Pendiente para que se vea completo:** los íconos reales en
+`public/icons/` (192/512/512-maskable) — sin ellos el prompt de
+instalación puede no aparecer en algunos navegadores, o verse con el
+ícono genérico. Ver `public/icons/README.md`.
 
 ## Cómo seguimos
 

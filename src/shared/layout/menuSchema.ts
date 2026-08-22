@@ -36,6 +36,10 @@ export interface MenuLink {
 
 export interface MenuGroup {
   type: 'group';
+  // Ruta de la pantalla que lista las sub-opciones del grupo (ej.
+  // "/inventarios"). Un click lleva directo ahí — ya no es un
+  // desplegable — y esa pantalla muestra las tarjetas de sus items.
+  to: string;
   label: string;
   icon: LucideIcon;
   items: MenuLink[];
@@ -56,6 +60,7 @@ export const menuSchema: MenuEntry[] = [
   },
   {
     type: 'group',
+    to: '/inventarios',
     label: 'Inventarios',
     icon: Package,
     items: [
@@ -112,6 +117,7 @@ export const menuSchema: MenuEntry[] = [
   },
   {
     type: 'group',
+    to: '/configuraciones',
     label: 'Configuraciones',
     icon: Settings,
     items: [
@@ -195,7 +201,14 @@ export function getVisibleMenu(permisos: Permiso[]): MenuEntry[] {
   }, []);
 }
 
-// Solo los links de primer nivel (para elegir los primarios del BottomNav).
-export function getTopLevelLinks(visibleMenu: MenuEntry[]): MenuLink[] {
-  return visibleMenu.filter((entry): entry is MenuLink => entry.type === 'link');
+// Busca un grupo por su ruta propia (ej. "/inventarios"), ya filtrado
+// por los permisos del usuario. Si el grupo no existe o quedó vacío
+// para ese rol, retorna undefined.
+export function findVisibleGroup(
+  visibleMenu: MenuEntry[],
+  to: string,
+): MenuGroup | undefined {
+  return visibleMenu.find(
+    (entry): entry is MenuGroup => entry.type === 'group' && entry.to === to,
+  );
 }

@@ -11,6 +11,7 @@ import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
 import { RootRedirect } from '@/features/auth/components/RootRedirect';
 import { MasPage } from '@/features/menu/pages/MasPage';
+import { MenuGroupPage } from '@/shared/layout/MenuGroupPage';
 
 export function AppRoutes() {
   return (
@@ -36,6 +37,12 @@ export function AppRoutes() {
                 <Route path="/sin-permisos" element={<SinPermisosPage />} />
                 <Route path="/sin-acceso" element={<SinAccesoPage />} />
                 <Route path="/mas" element={<MasPage />} />
+
+                {/* Pantallas de grupo: un click desde el Sidebar/BottomNav
+                    lleva directo aquí, mostrando las sub-opciones de esa
+                    sección como tarjetas (sin desplegable). */}
+                <Route path="/inventarios" element={<MenuGroupPage to="/inventarios" />} />
+                <Route path="/configuraciones" element={<MenuGroupPage to="/configuraciones" />} />
 
                 <Route
                   path="/dashboard"
