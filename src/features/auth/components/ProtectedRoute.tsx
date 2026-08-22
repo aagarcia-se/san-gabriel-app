@@ -13,13 +13,17 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
   const sessionValid = isAuthenticated && !!token && !isTokenExpired(token);
 
   if (!sessionValid) {
-    // Le pasamos a LoginPage por qué llegó aquí, para mostrar el aviso
-    // "debes iniciar sesión" en vez de dejarlo caer en blanco.
+    // Solo mostramos "Debes iniciar sesión" cuando alguien intentó entrar
+    // a una URL específica (deep link) sin sesión. Visitar la raíz "/" es
+    // el punto de entrada normal del sitio (ej. primera vez que se abre
+    // desde el navegador) y no debe sentirse como un aviso/error.
+    const isDeepLink = location.pathname !== '/';
+
     return (
       <Navigate
         to="/login"
         replace
-        state={{ from: location.pathname, reason: 'auth-required' }}
+        state={isDeepLink ? { from: location.pathname, reason: 'auth-required' } : undefined}
       />
     );
   }

@@ -249,6 +249,12 @@ Implementado desde la base con tokens semánticos, no colores fijos:
 en vez de `slate-*` directo, para que funcione en ambos temas sin
 esfuerzo extra.
 
+**Paleta de marca:** azul corporativo clásico (`brand-*` en
+`tailwind.config.ts`) — el tono típico de paneles administrativos/ERP,
+distinto del azul-índigo original. Como todos los componentes usan la
+clase semántica `brand-*` (nunca un hex a mano), un cambio de paleta a
+futuro es editar un solo lugar: la escala `brand` en `tailwind.config.ts`.
+
 ## Instalación de la PWA (agregar a inicio / barra de direcciones)
 
 El manifest y el Service Worker ya estaban configurados desde el inicio

@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'San Gabriel App',
         short_name: 'San Gabriel',
         description: 'Progressive Web App con React, TypeScript y Vite',
-        theme_color: '#3b63f2',
+        theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait-primary',

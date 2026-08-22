@@ -6,18 +6,21 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Azul corporativo clásico — el tono típico de paneles
+        // administrativos/ERP (distinto del azul-índigo original: este
+        // es un azul más "puro", formal, sin tirar a violeta).
         brand: {
-          50: '#eef4ff',
-          100: '#dbe6fe',
-          200: '#bed0fe',
-          300: '#91b1fc',
-          400: '#5f89f8',
-          500: '#3b63f2',
-          600: '#2645e6',
-          700: '#2135c9',
-          800: '#212fa2',
-          900: '#212c80',
-          950: '#171b4e',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
         },
         // Tokens semánticos: mismo nombre de clase en toda la app,
         // el VALOR cambia solo con la clase "dark" en <html> (ver

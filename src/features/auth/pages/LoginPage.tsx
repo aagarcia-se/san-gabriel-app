@@ -45,7 +45,7 @@ export function LoginPage() {
       {/* Panel de marca — solo visible en laptop/escritorio (lg+).
           Se mantiene con la paleta de marca fija (no sigue el tema),
           es un panel decorativo, igual que en apps tipo SaaS. */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-700 via-brand-900 to-slate-950 p-12 lg:flex">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-12 lg:flex">
         <div
           className="pointer-events-none absolute inset-0 opacity-20"
           style={{
