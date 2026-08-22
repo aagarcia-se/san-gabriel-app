@@ -12,18 +12,24 @@ function getInitialTheme(): Theme {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
-// Deben coincidir exactamente con --color-bg de globals.css (light/dark),
-// así el status bar del teléfono siempre es igual al fondo real de la app.
-const THEME_COLOR = { light: '#ffffff', dark: '#020617' } as const;
-
+// applyTheme SOLO cambia la clase "dark" y persiste la preferencia — ya
+// no toca el <meta name="theme-color"> aquí. Antes lo hacía siempre,
+// pero eso significaba que alternar el tema EN EL LOGIN también movía
+// la barra de estado del teléfono a blanco, cosa que no debe pasar: el
+// login siempre debe verse con el mismo navy fijo. Ahora cada pantalla
+// decide si debe sincronizar el theme-color con el tema activo:
+// - LoginPage: nunca lo sincroniza (queda fijo en #020617).
+// - AppShell (área autenticada): sí lo sincroniza (ver su useEffect).
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
   document.documentElement.style.colorScheme = theme;
   localStorage.setItem(STORAGE_KEY, theme);
-
-  const meta = document.querySelector('meta[name="theme-color"]');
-  meta?.setAttribute('content', THEME_COLOR[theme]);
 }
+
+// Deben coincidir exactamente con --color-bg de globals.css (light/dark).
+// Lo usan las pantallas que sí quieren mantener el status bar sincronizado
+// con el tema activo (por ahora, solo AppShell).
+export const THEME_COLOR = { light: '#ffffff', dark: '#020617' } as const;
 
 interface ThemeState {
   theme: Theme;

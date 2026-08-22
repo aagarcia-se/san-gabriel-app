@@ -304,26 +304,42 @@ UI propia para que sea evidente que se puede instalar:
   el Sidebar (desktop), ambos solo visibles cuando el navegador ofrece
   la instalación nativa.
 
-**Íconos:** 3 PNG placeholder en `public/icons/` ("SG" en azul `#2563eb`
-sobre un cuadrado **completamente sólido**, sin transparencia). Esto
-último es importante — un ícono con esquinas transparentes o recortado
-en círculo por nosotros mismos hace que algunos launchers de Android le
-agreguen un fondo blanco alrededor al mostrarlo. Dejando el cuadrado
-100% sólido, el sistema operativo aplica su propia máscara (círculo,
-squircle, etc.) sin ese borde raro. Los 3 tamaños (192/512/maskable)
-usan exactamente el mismo azul — antes había una inconsistencia de
-color entre tamaños. El fondo de splash/status bar (`background_color`/
-`theme_color` del manifest) sigue en el navy `#020617` del login, así
-que al abrir la app instalada se ve: fondo navy + ícono azul encima,
-consistente. Cuando tengas el logo real de la panadería, reemplaza los
-3 archivos manteniendo el mismo nombre/tamaño (ver
-`public/icons/README.md`).
+**Íconos:** 3 PNG placeholder en `public/icons/` — "SG" en blanco sobre
+el **mismo navy exacto del fondo** (`#020617`), no un azul distinto.
+Esto es a propósito: si el ícono usa un tono distinto al
+`background_color` del manifest, se nota como una "caja" de color
+distinto flotando sobre el splash — con el mismo color exacto, solo
+quedan visibles las letras blancas, sin caja. Son cuadrados
+**completamente sólidos** (sin transparencia): un ícono con esquinas
+transparentes o recortado en círculo por nosotros mismos hace que
+algunos launchers de Android le agreguen un fondo blanco alrededor al
+mostrarlo — dejándolo 100% sólido, el sistema operativo aplica su
+propia máscara (círculo, squircle, etc.) sin ese borde. Los 3 tamaños
+(192/512/maskable) usan exactamente el mismo color. Cuando tengas el
+logo real de la panadería, reemplaza los 3 archivos manteniendo el
+mismo nombre/tamaño (ver `public/icons/README.md`).
 
-**Si ya instalaste la app en un celular con un ícono viejo (rosa o con
-fondo blanco):** los sistemas operativos cachean agresivo el ícono al
-momento de instalar — no se actualiza solo. Hay que desinstalar la app
-del teléfono y volver a instalarla desde el navegador para ver el
-ícono nuevo.
+**Pantalla de carga estática** (`index.html`): mientras el bundle de JS
+termina de cargar/parsear (antes de que React monte), se muestra una
+pantalla con el mismo fondo navy + cuadrícula + un badge "SG" con un
+pulso sutil — puro HTML/CSS, sin depender de React. Así la transición
+entre el splash nativo del sistema operativo y la app real es uniforme,
+sin flashes de otro color de por medio. React reemplaza este contenido
+automáticamente al montar.
+
+**El status bar del teléfono es fijo en el login, dinámico dentro de la
+app:** alternar el tema (claro/oscuro) en la pantalla de login **no**
+cambia el `theme-color` — se queda fijo en el navy `#020617`, porque el
+login siempre se ve igual sin importar la preferencia. Una vez adentro
+de la app (`AppShell.tsx`), sí se sincroniza con el tema activo (blanco
+en modo claro, navy en modo oscuro), y vuelve a fijarse en navy
+automáticamente al cerrar sesión.
+
+**Si ya instalaste la app en un celular con un ícono viejo (rosa,
+azul distinto, o con fondo blanco):** los sistemas operativos cachean
+agresivo el ícono al momento de instalar — no se actualiza solo. Hay
+que desinstalar la app del teléfono y volver a instalarla desde el
+navegador para ver el ícono nuevo.
 
 **Requisito importante — contexto seguro:** el navegador solo ofrece
 instalar en HTTPS, o en `http://localhost` exactamente. Si pruebas

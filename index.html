@@ -11,6 +11,54 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>San Gabriel App</title>
+    <style>
+      /* Pantalla de carga estática (puro HTML/CSS, sin React todavía).
+         Se ve mientras el bundle de JS termina de cargar/parsear, con el
+         mismo diseño del login (cuadrícula + "SG" con pulso) para que la
+         transición entre el splash nativo del SO y la app sea uniforme
+         — sin blancos ni cambios de tono de por medio. React reemplaza
+         este contenido automáticamente al montar sobre #root. */
+      .app-loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #020617;
+        z-index: 9999;
+      }
+      .app-loading::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0.035;
+        background-image: linear-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .app-loading__badge {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        border-radius: 9999px;
+        background: #020617;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 20px/1 system-ui, -apple-system, sans-serif;
+        color: #fff;
+        animation: app-loading-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes app-loading-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.35);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+        }
+      }
+    </style>
     <script>
       // Aplica el tema (claro/oscuro) ANTES del primer render, para que
       // no haya un parpadeo del tema equivocado al cargar la página.
@@ -21,14 +69,16 @@
       // respeta prefers-color-scheme): así el splash screen, la barra
       // de estado del teléfono y el contenido son el mismo azul-marino
       // #020617 desde la primera carga, sin flashes en blanco.
+      //
+      // El theme-color SIEMPRE arranca en #020617 (navy del login) sin
+      // importar el tema guardado — la pantalla de login lo necesita
+      // fijo así. Si el usuario ya tenía sesión y su tema es claro, el
+      // AppShell lo corrige a blanco apenas monta (ver AppShell.tsx).
       (function () {
         try {
           var stored = localStorage.getItem('theme');
           var isDark = stored ? stored === 'dark' : true;
           document.documentElement.classList.toggle('dark', isDark);
-
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', isDark ? '#020617' : '#ffffff');
         } catch (e) {
           /* localStorage no disponible (modo privado, etc.) — usa oscuro por defecto */
         }
@@ -36,7 +86,11 @@
     </script>
   </head>
   <body class="bg-bg text-ink antialiased overscroll-none">
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loading" aria-hidden="true">
+        <div class="app-loading__badge">SG</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
