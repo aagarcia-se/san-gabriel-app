@@ -304,11 +304,26 @@ UI propia para que sea evidente que se puede instalar:
   el Sidebar (desktop), ambos solo visibles cuando el navegador ofrece
   la instalación nativa.
 
-**Íconos:** ya hay 3 PNG placeholder generados en `public/icons/`
-("SG" sobre el color de marca) — sin íconos reales el manifest no es
-válido y el navegador nunca ofrece instalar. Cuando tengas el logo real
-de la panadería, reemplázalos manteniendo el mismo nombre/tamaño (ver
+**Íconos:** 3 PNG placeholder en `public/icons/` ("SG" en azul `#2563eb`
+sobre un cuadrado **completamente sólido**, sin transparencia). Esto
+último es importante — un ícono con esquinas transparentes o recortado
+en círculo por nosotros mismos hace que algunos launchers de Android le
+agreguen un fondo blanco alrededor al mostrarlo. Dejando el cuadrado
+100% sólido, el sistema operativo aplica su propia máscara (círculo,
+squircle, etc.) sin ese borde raro. Los 3 tamaños (192/512/maskable)
+usan exactamente el mismo azul — antes había una inconsistencia de
+color entre tamaños. El fondo de splash/status bar (`background_color`/
+`theme_color` del manifest) sigue en el navy `#020617` del login, así
+que al abrir la app instalada se ve: fondo navy + ícono azul encima,
+consistente. Cuando tengas el logo real de la panadería, reemplaza los
+3 archivos manteniendo el mismo nombre/tamaño (ver
 `public/icons/README.md`).
+
+**Si ya instalaste la app en un celular con un ícono viejo (rosa o con
+fondo blanco):** los sistemas operativos cachean agresivo el ícono al
+momento de instalar — no se actualiza solo. Hay que desinstalar la app
+del teléfono y volver a instalarla desde el navegador para ver el
+ícono nuevo.
 
 **Requisito importante — contexto seguro:** el navegador solo ofrece
 instalar en HTTPS, o en `http://localhost` exactamente. Si pruebas

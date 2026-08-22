@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react';
+import { Download, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { ThemeToggle } from '@/shared/theme/ThemeToggle';
@@ -29,7 +29,7 @@ export function Topbar() {
             onClick={promptInstall}
             aria-label="Instalar la aplicación"
             title="Instalar app"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-muted transition-colors hover:bg-surface-2 hover:text-ink active:bg-surface-2"
           >
             <Download className="h-[18px] w-[18px]" />
           </button>
@@ -38,9 +38,11 @@ export function Topbar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="ml-1 text-sm font-medium text-muted hover:text-danger-600 dark:hover:text-danger-400"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-muted transition-colors hover:border-danger-500/30 hover:bg-danger-500/10 hover:text-danger-600 active:bg-danger-500/10 dark:hover:text-danger-400"
         >
-          Salir
+          <LogOut className="h-[18px] w-[18px]" />
         </button>
       </div>
     </header>

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRight, Download } from 'lucide-react';
+import { ChevronRight, Download, LogOut } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { ThemeToggle } from '@/shared/theme/ThemeToggle';
@@ -59,8 +59,9 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-[13px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-danger-600 dark:hover:text-danger-400"
+          className="mt-1 flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] font-medium text-muted transition-colors hover:bg-danger-500/10 hover:text-danger-600 dark:hover:text-danger-400"
         >
+          <LogOut className="h-4 w-4 shrink-0" />
           Cerrar sesión
         </button>
       </div>
