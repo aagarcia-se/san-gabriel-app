@@ -352,44 +352,69 @@ probar en el celular, usa `npm run build && npm run preview` en una URL
 
 ## Módulo: Usuarios
 
-**Implementado hasta ahora:** consulta/listado (`GET /consultarUsuarios`),
-en `src/features/usuarios/`. Mobile: tarjetas. Desktop (`md+`): tabla.
-Incluye búsqueda en vivo (cliente) por nombre, usuario, correo, rol o
-sucursal, y estados de carga/error/vacío con los componentes
-compartidos (`Spinner`, `ErrorState`, `EmptyState`).
+**Implementado hasta ahora:**
 
-Se agregó `src/shared/ui/Badge.tsx` — componente reutilizable para
-estados (Activo/Bloqueado acá; lo vamos a volver a usar en stock,
-órdenes, etc.).
+- **Consulta/listado** (`GET /consultarUsuarios`) — tarjetas en móvil,
+  tabla en desktop (`md+`), con búsqueda en vivo (cliente) por nombre,
+  usuario, correo, rol o sucursal.
+- **Bloquear / desbloquear** (`PUT /bloquearUsuario/:id`,
+  `PUT /desbloquearUsuario/:id`) — botón de fila, con confirmación.
+- **Eliminar** (`DELETE /eliminarUsuario/:id`) — confirmación en rojo
+  (acción destructiva, no se puede deshacer).
+- **Restablecer contraseña** (`PUT /resetear-contrasenia`) — confirmación,
+  y la contraseña generada se muestra en un diálogo con botón de copiar
+  (no se vuelve a mostrar después de cerrarlo, así que el admin debe
+  copiarla ahí mismo).
 
-**Decisiones que tomé revisando tu código — confírmalas antes de que
-construya crear/editar/bloquear/eliminar/resetear:**
+Componentes nuevos y reutilizables (para todos los módulos futuros):
+`src/shared/ui/Badge.tsx` (estados tipo Activo/Bloqueado) y
+`src/shared/ui/ConfirmDialog.tsx` (confirmaciones, con variante
+`danger`).
 
-1. **`actualizarUsuario` vs `actualizarDatosUsuario`** — tu API tiene
-   dos endpoints que se solapan: uno actualiza nombre/apellido/correo/
-   **usuario** (`PUT /actualizarUsuario/`), el otro actualiza
-   nombre/apellido/correo/**rol/sucursal** (`PUT /actualizar-datos-usuario`).
-   Mi plan es usar `actualizar-datos-usuario` para el formulario de
-   "Editar usuario" (porque incluye rol y sucursal, lo que un admin
-   normalmente necesita cambiar) y dejar `actualizarUsuario` sin usar
-   por ahora. Si necesitas que el usuario (username) también sea
-   editable, dime y lo agrego combinando ambos.
-2. **Crear usuario — `fechaCreacion`:** tu DAO espera que le llegue
-   `fechaCreacion` en el body, pero no vi de dónde la genera (¿la
-   pusiste en otro middleware que no compartiste, o la espera del
-   frontend?). Voy a enviar la fecha/hora actual en formato ISO desde
-   el formulario como valor por defecto — avísame si en realidad debe
-   venir de otro lado.
-3. **`cambiarPassword` (`PUT /actualizar-pass`)** busca por `usuario`
-   (username), no por `idUsuario` — parece pensado para que un usuario
-   cambie **su propia** contraseña (encaja mejor en `/perfil`, que ya
-   existe como placeholder) en vez de una acción de admin desde la
-   lista de usuarios. `resetear-contrasenia` sí es claramente la acción
-   de admin (genera una nueva y la devuelve para compartirla). Mi plan:
-   conectar `resetear-contrasenia` al módulo de Usuarios, y
-   `actualizar-pass` a Mi Perfil más adelante.
+**Decisiones confirmadas contigo:**
+
+1. **Edición** usará `PUT /actualizar-datos-usuario` (nombre, correo,
+   rol, sucursal) cuando construyamos el formulario de "Editar
+   usuario" — `actualizarUsuario` (que además toca el username) queda
+   reservado para una futura pantalla de "Mi perfil" que edite el
+   propio usuario, sin importar el rol.
+2. **`fechaCreacion`** en `crearUsuario`: se va a generar en el
+   navegador con `dayjs` y enviarse en el payload sin mostrarse en el
+   formulario — pendiente para cuando implementemos "Crear usuario".
+3. **Contraseñas** — `actualizar-pass` (cambiar la propia) queda para
+   `/perfil`; `resetear-contrasenia` (acción de admin) ya está
+   conectado acá, en Usuarios.
+
+**Sobre el permiso `/reset-pass`:** no aparece en el menú a propósito
+— el menú no se genera automáticamente desde los permisos del JWT,
+sino desde `menuSchema.ts`, y ese permiso nunca se declaró ahí como
+pantalla. Como resetear la contraseña es una acción sobre un usuario
+puntual, tiene mejor UX como botón dentro de la lista de Usuarios que
+como pantalla aparte (evita "¿a qué usuario?" como paso extra). El
+botón de "Restablecer contraseña" solo aparece si el rol tiene ese
+permiso específico (`useAuthStore().permisos` incluye `/reset-pass`) —
+un rol puede administrar usuarios sin poder resetear contraseñas, o al
+revés.
+
+**Nota aparte:** en el JWT que compartiste, el permiso 18
+("Configuraciones") también apunta a `/config`, la misma ruta que el
+permiso 8 ("Config Materia Prima"). Probablemente un dato de prueba en
+el backend — no afecta nada por ahora, pero probablemente valga la
+pena revisarlo del lado del servidor.
+
+**Pendiente:** crear usuario, editar usuario (formularios).
 
 ## Cómo seguimos
+
+Para cada módulo que quieras integrar contra tu API, puedes:
+
+1. Pegar el código relevante (endpoint, DTO/response de ejemplo, o el controller).
+2. O pasar el link del repo de GitHub (si es público, lo puedo leer directo;
+   si es privado, cuéntame el endpoint y el shape de la respuesta y armamos
+   los tipos + el hook de consumo).
+
+Con eso genero: tipos TypeScript del recurso, funciones de API, hooks de
+`useQuery`/`useMutation`, y los componentes de UI (mobile-first) para ese módulo.
 
 Para cada módulo que quieras integrar contra tu API, puedes:
 

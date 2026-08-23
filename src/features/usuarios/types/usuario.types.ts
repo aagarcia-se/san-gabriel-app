@@ -19,3 +19,15 @@ export interface UsuarioListItem {
 // GET /consultarUsuarios responde:
 // { status, message, usuarios: [...] }
 export type ConsultarUsuariosResponse = WithPayload<'usuarios', UsuarioListItem[]>;
+
+// Las siguientes 4 responden con el rowsAffected del UPDATE/DELETE bajo
+// una key distinta cada una (así lo hace el controller real) — no
+// necesitamos el valor en sí, solo confirmar éxito, pero tipamos por
+// completitud.
+export type BloquearUsuarioResponse = WithPayload<'usuarioBloqueado', number>;
+export type DesbloquearUsuarioResponse = WithPayload<'usuarioDesbloqueado', number>;
+export type EliminarUsuarioResponse = WithPayload<'usuarioEliminado', number>;
+
+// PUT /resetear-contrasenia responde con la nueva contraseña generada,
+// para que el admin se la comparta al usuario.
+export type ResetearContraseniaResponse = WithPayload<'passGenerada', string>;
