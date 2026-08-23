@@ -21,5 +21,8 @@ export const queryClient = new QueryClient({
 // Cada feature nueva agrega su propio bloque aquí para mantener
 // invalidaciones y cache keys consistentes en toda la app.
 export const queryKeys = {
-  // ejemplo: home: { all: ['home'] as const },
+  usuarios: {
+    all: ['usuarios'] as const,
+    list: () => [...queryKeys.usuarios.all, 'list'] as const,
+  },
 };

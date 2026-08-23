@@ -350,6 +350,45 @@ configuración, es una restricción de seguridad de los navegadores. Para
 probar en el celular, usa `npm run build && npm run preview` en una URL
 `https://` desplegada (ej. Vercel), o una herramienta de túnel HTTPS.
 
+## Módulo: Usuarios
+
+**Implementado hasta ahora:** consulta/listado (`GET /consultarUsuarios`),
+en `src/features/usuarios/`. Mobile: tarjetas. Desktop (`md+`): tabla.
+Incluye búsqueda en vivo (cliente) por nombre, usuario, correo, rol o
+sucursal, y estados de carga/error/vacío con los componentes
+compartidos (`Spinner`, `ErrorState`, `EmptyState`).
+
+Se agregó `src/shared/ui/Badge.tsx` — componente reutilizable para
+estados (Activo/Bloqueado acá; lo vamos a volver a usar en stock,
+órdenes, etc.).
+
+**Decisiones que tomé revisando tu código — confírmalas antes de que
+construya crear/editar/bloquear/eliminar/resetear:**
+
+1. **`actualizarUsuario` vs `actualizarDatosUsuario`** — tu API tiene
+   dos endpoints que se solapan: uno actualiza nombre/apellido/correo/
+   **usuario** (`PUT /actualizarUsuario/`), el otro actualiza
+   nombre/apellido/correo/**rol/sucursal** (`PUT /actualizar-datos-usuario`).
+   Mi plan es usar `actualizar-datos-usuario` para el formulario de
+   "Editar usuario" (porque incluye rol y sucursal, lo que un admin
+   normalmente necesita cambiar) y dejar `actualizarUsuario` sin usar
+   por ahora. Si necesitas que el usuario (username) también sea
+   editable, dime y lo agrego combinando ambos.
+2. **Crear usuario — `fechaCreacion`:** tu DAO espera que le llegue
+   `fechaCreacion` en el body, pero no vi de dónde la genera (¿la
+   pusiste en otro middleware que no compartiste, o la espera del
+   frontend?). Voy a enviar la fecha/hora actual en formato ISO desde
+   el formulario como valor por defecto — avísame si en realidad debe
+   venir de otro lado.
+3. **`cambiarPassword` (`PUT /actualizar-pass`)** busca por `usuario`
+   (username), no por `idUsuario` — parece pensado para que un usuario
+   cambie **su propia** contraseña (encaja mejor en `/perfil`, que ya
+   existe como placeholder) en vez de una acción de admin desde la
+   lista de usuarios. `resetear-contrasenia` sí es claramente la acción
+   de admin (genera una nueva y la devuelve para compartirla). Mi plan:
+   conectar `resetear-contrasenia` al módulo de Usuarios, y
+   `actualizar-pass` a Mi Perfil más adelante.
+
 ## Cómo seguimos
 
 Para cada módulo que quieras integrar contra tu API, puedes:

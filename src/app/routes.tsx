@@ -6,6 +6,7 @@ import { SinPermisosPage } from '@/shared/ui/SinPermisosPage';
 import { InicioPage } from '@/features/inicio/pages/InicioPage';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { PerfilPage } from '@/features/perfil/pages/PerfilPage';
+import { UsuariosPage } from '@/features/usuarios/pages/UsuariosPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -49,6 +50,15 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/dashboard">
                       <HomePage />
+                    </RequirePermission>
+                  }
+                />
+
+                <Route
+                  path="/users"
+                  element={
+                    <RequirePermission ruta="/users">
+                      <UsuariosPage />
                     </RequirePermission>
                   }
                 />
