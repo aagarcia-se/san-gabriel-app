@@ -1,7 +1,11 @@
 import { httpClient } from '@/shared/api/httpClient';
 import type {
+  ActualizarDatosUsuarioRequest,
+  ActualizarDatosUsuarioResponse,
   BloquearUsuarioResponse,
   ConsultarUsuariosResponse,
+  CrearUsuarioRequest,
+  CrearUsuarioResponse,
   DesbloquearUsuarioResponse,
   EliminarUsuarioResponse,
   ResetearContraseniaResponse,
@@ -9,6 +13,21 @@ import type {
 
 export async function getUsuarios(): Promise<ConsultarUsuariosResponse> {
   const { data } = await httpClient.get<ConsultarUsuariosResponse>('/consultarUsuarios');
+  return data;
+}
+
+export async function crearUsuario(payload: CrearUsuarioRequest): Promise<CrearUsuarioResponse> {
+  const { data } = await httpClient.post<CrearUsuarioResponse>('/crearUsuario', payload);
+  return data;
+}
+
+export async function actualizarDatosUsuario(
+  payload: ActualizarDatosUsuarioRequest,
+): Promise<ActualizarDatosUsuarioResponse> {
+  const { data } = await httpClient.put<ActualizarDatosUsuarioResponse>(
+    '/actualizar-datos-usuario',
+    payload,
+  );
   return data;
 }
 

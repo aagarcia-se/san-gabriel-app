@@ -402,7 +402,35 @@ permiso 8 ("Config Materia Prima"). Probablemente un dato de prueba en
 el backend — no afecta nada por ahora, pero probablemente valga la
 pena revisarlo del lado del servidor.
 
-**Pendiente:** crear usuario, editar usuario (formularios).
+**Crear y editar (ya implementados):**
+
+- **Crear** (`/users/nuevo`, `POST /crearUsuario`) — formulario con
+  nombre, apellido, correo, ID de rol e ID de sucursal. `fechaCreacion`
+  se genera con `dayjs` en el navegador y se manda en el payload sin
+  mostrarse en el formulario. El usuario/contraseña los genera tu
+  backend y los envía por correo — el formulario no los pide.
+- **Editar** (`/users/:idUsuario/editar`, `PUT /actualizar-datos-usuario`)
+  — mismo formulario, precargado. No hay endpoint de "usuario por ID",
+  así que busca el usuario dentro de la lista ya cacheada
+  (`useUsuarios()` + `.find()`) — funciona incluso entrando directo a
+  la URL, porque TanStack Query dispara la consulta si no la tiene en
+  cache.
+
+**Dos limitaciones conocidas, marcadas en el propio formulario:**
+
+1. `consultarUsuarios` devuelve el nombre **ya concatenado**
+   ("Angel Garcia"), no nombre/apellido por separado. Para precargar
+   Editar, lo separamos por el primer espacio (nombre = primera
+   palabra, resto = apellido) — no es infalible con nombres compuestos.
+   El formulario muestra un aviso pidiendo verificar antes de guardar.
+   Si en algún momento tienes un endpoint que devuelva el usuario con
+   los campos ya separados, avísame y cambio a eso.
+2. **Rol y Sucursal** son campos numéricos (ID) por ahora, no
+   selectores — se van a convertir en selects reales cuando conectemos
+   esos módulos.
+
+Componente nuevo reutilizable: `src/shared/ui/PageHeader.tsx` (header
+con botón de volver, para toda pantalla de formulario).
 
 ## Cómo seguimos
 

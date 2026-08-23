@@ -1,0 +1,163 @@
+import { useState, type FormEvent } from 'react';
+
+export interface UsuarioFormValues {
+  nombreUsuario: string;
+  apellidoUsuario: string;
+  correoUsuario: string;
+  idRol: string;
+  idSucursal: string;
+}
+
+interface UsuarioFormProps {
+  initialValues?: Partial<UsuarioFormValues>;
+  submitLabel: string;
+  isSubmitting: boolean;
+  errorMessage?: string;
+  onSubmit: (values: UsuarioFormValues) => void;
+  onCancel: () => void;
+}
+
+const EMPTY_VALUES: UsuarioFormValues = {
+  nombreUsuario: '',
+  apellidoUsuario: '',
+  correoUsuario: '',
+  idRol: '',
+  idSucursal: '',
+};
+
+export function UsuarioForm({
+  initialValues,
+  submitLabel,
+  isSubmitting,
+  errorMessage,
+  onSubmit,
+  onCancel,
+}: UsuarioFormProps) {
+  const [values, setValues] = useState<UsuarioFormValues>({
+    ...EMPTY_VALUES,
+    ...initialValues,
+  });
+
+  function setField<K extends keyof UsuarioFormValues>(field: K, value: UsuarioFormValues[K]) {
+    setValues((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    onSubmit(values);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label htmlFor="nombreUsuario" className="text-sm font-medium text-ink/80">
+            Nombre
+          </label>
+          <input
+            id="nombreUsuario"
+            type="text"
+            required
+            value={values.nombreUsuario}
+            onChange={(e) => setField('nombreUsuario', e.target.value)}
+            disabled={isSubmitting}
+            className="input"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="apellidoUsuario" className="text-sm font-medium text-ink/80">
+            Apellido
+          </label>
+          <input
+            id="apellidoUsuario"
+            type="text"
+            required
+            value={values.apellidoUsuario}
+            onChange={(e) => setField('apellidoUsuario', e.target.value)}
+            disabled={isSubmitting}
+            className="input"
+          />
+        </div>
+      </div>
+
+      {initialValues?.nombreUsuario !== undefined && (
+        <p className="-mt-2 text-xs text-muted">
+          Separamos el nombre completo automáticamente — verifica que nombre y apellido queden
+          correctos antes de guardar.
+        </p>
+      )}
+
+      <div className="space-y-1.5">
+        <label htmlFor="correoUsuario" className="text-sm font-medium text-ink/80">
+          Correo
+        </label>
+        <input
+          id="correoUsuario"
+          type="email"
+          required
+          value={values.correoUsuario}
+          onChange={(e) => setField('correoUsuario', e.target.value)}
+          disabled={isSubmitting}
+          className="input"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label htmlFor="idRol" className="text-sm font-medium text-ink/80">
+            ID de rol
+          </label>
+          <input
+            id="idRol"
+            type="number"
+            min={1}
+            required
+            value={values.idRol}
+            onChange={(e) => setField('idRol', e.target.value)}
+            disabled={isSubmitting}
+            className="input"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="idSucursal" className="text-sm font-medium text-ink/80">
+            ID de sucursal
+          </label>
+          <input
+            id="idSucursal"
+            type="number"
+            min={1}
+            required
+            value={values.idSucursal}
+            onChange={(e) => setField('idSucursal', e.target.value)}
+            disabled={isSubmitting}
+            className="input"
+          />
+        </div>
+      </div>
+      <p className="-mt-2 text-xs text-muted">
+        Por ahora se escriben a mano — van a ser selectores en cuanto conectemos Roles y
+        Sucursales.
+      </p>
+
+      {errorMessage && (
+        <p
+          role="alert"
+          className="rounded-lg bg-danger-500/10 px-3 py-2 text-sm text-danger-600 dark:text-danger-400"
+        >
+          {errorMessage}
+        </p>
+      )}
+
+      <div className="flex justify-end gap-2 pt-1">
+        <button type="button" onClick={onCancel} disabled={isSubmitting} className="btn-secondary">
+          Cancelar
+        </button>
+        <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting ? 'Guardando…' : submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+}

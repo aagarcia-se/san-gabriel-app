@@ -31,3 +31,29 @@ export type EliminarUsuarioResponse = WithPayload<'usuarioEliminado', number>;
 // PUT /resetear-contrasenia responde con la nueva contraseña generada,
 // para que el admin se la comparta al usuario.
 export type ResetearContraseniaResponse = WithPayload<'passGenerada', string>;
+
+// POST /crearUsuario — el usuario y la contraseña se generan en el
+// backend (y la contraseña se envía por correo), así que el frontend
+// NO los manda. fechaCreacion se genera en el navegador (dayjs) y se
+// envía sin mostrarse en el formulario.
+export interface CrearUsuarioRequest {
+  nombreUsuario: string;
+  apellidoUsuario: string;
+  correoUsuario: string;
+  idRol: number;
+  idSucursal: number;
+  fechaCreacion: string;
+}
+export type CrearUsuarioResponse = WithPayload<'idUsuario', number>;
+
+// PUT /actualizar-datos-usuario — nombre, correo, rol y sucursal.
+// (el username se edita aparte, en /perfil, con actualizarUsuario)
+export interface ActualizarDatosUsuarioRequest {
+  idUsuario: number;
+  nombreUsuario: string;
+  apellidoUsuario: string;
+  correoUsuario: string;
+  idRol: number;
+  idSucursal: number;
+}
+export type ActualizarDatosUsuarioResponse = WithPayload<'usuarioActualizado', number>;

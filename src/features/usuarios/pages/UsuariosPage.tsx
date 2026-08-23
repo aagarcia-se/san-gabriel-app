@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { KeyRound, Lock, Search, Trash2, Unlock, Users as UsersIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { KeyRound, Lock, Pencil, Plus, Search, Trash2, Unlock, Users as UsersIcon } from 'lucide-react';
 import { useUsuarios } from '../api/useUsuarios';
 import {
   useBloquearUsuario,
@@ -102,9 +103,15 @@ export function UsuariosPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold text-ink">Usuarios</h1>
-        <p className="text-sm text-muted">Personal con acceso a San Gabriel App.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink">Usuarios</h1>
+          <p className="text-sm text-muted">Personal con acceso a San Gabriel App.</p>
+        </div>
+        <Link to="/users/nuevo" className="btn-primary shrink-0 !px-3 sm:!px-4">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Nuevo usuario</span>
+        </Link>
       </div>
 
       <div className="relative">
@@ -221,6 +228,14 @@ function RowActions({ usuario, canResetPassword, disabled, onAction }: ActionsPr
 
   return (
     <div className="flex items-center justify-end gap-1">
+      <Link
+        to={`/users/${usuario.idUsuario}/editar`}
+        aria-label="Editar"
+        title="Editar"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+      >
+        <Pencil className="h-4 w-4" />
+      </Link>
       <IconActionButton
         label={isBlocked ? 'Desbloquear' : 'Bloquear'}
         icon={isBlocked ? Unlock : Lock}

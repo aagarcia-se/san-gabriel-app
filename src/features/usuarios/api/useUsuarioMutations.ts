@@ -1,5 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { bloquearUsuario, desbloquearUsuario, eliminarUsuario, resetearContrasenia } from './usuariosApi';
+import {
+  actualizarDatosUsuario,
+  bloquearUsuario,
+  crearUsuario,
+  desbloquearUsuario,
+  eliminarUsuario,
+  resetearContrasenia,
+} from './usuariosApi';
 import { queryKeys } from '@/shared/api/queryClient';
 
 export function useBloquearUsuario() {
@@ -37,5 +44,25 @@ export function useEliminarUsuario() {
 export function useResetearContrasenia() {
   return useMutation({
     mutationFn: resetearContrasenia,
+  });
+}
+
+export function useCrearUsuario() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: crearUsuario,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.usuarios.list() });
+    },
+  });
+}
+
+export function useActualizarDatosUsuario() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: actualizarDatosUsuario,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.usuarios.list() });
+    },
   });
 }

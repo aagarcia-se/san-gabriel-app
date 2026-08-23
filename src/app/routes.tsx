@@ -7,6 +7,8 @@ import { InicioPage } from '@/features/inicio/pages/InicioPage';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { PerfilPage } from '@/features/perfil/pages/PerfilPage';
 import { UsuariosPage } from '@/features/usuarios/pages/UsuariosPage';
+import { CrearUsuarioPage } from '@/features/usuarios/pages/CrearUsuarioPage';
+import { EditarUsuarioPage } from '@/features/usuarios/pages/EditarUsuarioPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -59,6 +61,25 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/users">
                       <UsuariosPage />
+                    </RequirePermission>
+                  }
+                />
+                {/* Sub-pantallas de Usuarios: mismo permiso que la lista
+                    (no son un permiso propio del backend, son parte del
+                    mismo módulo). */}
+                <Route
+                  path="/users/nuevo"
+                  element={
+                    <RequirePermission ruta="/users">
+                      <CrearUsuarioPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/users/:idUsuario/editar"
+                  element={
+                    <RequirePermission ruta="/users">
+                      <EditarUsuarioPage />
                     </RequirePermission>
                   }
                 />
