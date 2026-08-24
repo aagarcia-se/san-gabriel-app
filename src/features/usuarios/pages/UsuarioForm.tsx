@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useSucursales } from '@/features/sucursales/api/useSucursales';
 
 export interface UsuarioFormValues {
   nombreUsuario: string;
@@ -37,6 +38,12 @@ export function UsuarioForm({
     ...EMPTY_VALUES,
     ...initialValues,
   });
+
+  const {
+    data: sucursales,
+    isLoading: isLoadingSucursales,
+    isError: isSucursalesError,
+  } = useSucursales();
 
   function setField<K extends keyof UsuarioFormValues>(field: K, value: UsuarioFormValues[K]) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -122,23 +129,48 @@ export function UsuarioForm({
 
         <div className="space-y-1.5">
           <label htmlFor="idSucursal" className="text-sm font-medium text-ink/80">
-            ID de sucursal
+            Sucursal
           </label>
-          <input
-            id="idSucursal"
-            type="number"
-            min={1}
-            required
-            value={values.idSucursal}
-            onChange={(e) => setField('idSucursal', e.target.value)}
-            disabled={isSubmitting}
-            className="input"
-          />
+          {isSucursalesError ? (
+            <>
+              <input
+                id="idSucursal"
+                type="number"
+                min={1}
+                required
+                value={values.idSucursal}
+                onChange={(e) => setField('idSucursal', e.target.value)}
+                disabled={isSubmitting}
+                className="input"
+              />
+              <p className="text-xs text-danger-600 dark:text-danger-400">
+                No se pudo cargar la lista de sucursales — escribe el ID a mano.
+              </p>
+            </>
+          ) : (
+            <select
+              id="idSucursal"
+              required
+              value={values.idSucursal}
+              onChange={(e) => setField('idSucursal', e.target.value)}
+              disabled={isSubmitting || isLoadingSucursales}
+              className="input"
+            >
+              <option value="" disabled>
+                {isLoadingSucursales ? 'Cargando…' : 'Selecciona una sucursal'}
+              </option>
+              {sucursales?.map((sucursal) => (
+                <option key={sucursal.idSucursal} value={sucursal.idSucursal}>
+                  {sucursal.nombreSucursal}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
       <p className="-mt-2 text-xs text-muted">
-        Por ahora se escriben a mano — van a ser selectores en cuanto conectemos Roles y
-        Sucursales.
+        El ID de rol se escribe a mano por ahora — va a ser un selector en cuanto conectemos
+        Roles.
       </p>
 
       {errorMessage && (

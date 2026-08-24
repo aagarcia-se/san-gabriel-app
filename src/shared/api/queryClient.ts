@@ -25,4 +25,8 @@ export const queryKeys = {
     all: ['usuarios'] as const,
     list: () => [...queryKeys.usuarios.all, 'list'] as const,
   },
+  sucursales: {
+    all: ['sucursales'] as const,
+    list: () => [...queryKeys.sucursales.all, 'list'] as const,
+  },
 };

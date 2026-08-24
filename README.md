@@ -425,12 +425,39 @@ pena revisarlo del lado del servidor.
    El formulario muestra un aviso pidiendo verificar antes de guardar.
    Si en algún momento tienes un endpoint que devuelva el usuario con
    los campos ya separados, avísame y cambio a eso.
-2. **Rol y Sucursal** son campos numéricos (ID) por ahora, no
-   selectores — se van a convertir en selects reales cuando conectemos
-   esos módulos.
+2. **Rol** sigue siendo un campo numérico (ID) por ahora — va a
+   convertirse en selector cuando conectemos ese módulo.
+   **Sucursal ya es un selector real** (ver módulo de Sucursales abajo).
 
 Componente nuevo reutilizable: `src/shared/ui/PageHeader.tsx` (header
 con botón de volver, para toda pantalla de formulario).
+
+## Módulo: Sucursales
+
+CRUD completo en `src/features/sucursales/` — mismo patrón que
+Usuarios (lista con tarjetas/tabla + búsqueda, crear y editar
+compartiendo `SucursalForm.tsx`, `ConfirmDialog` para eliminar).
+
+- **Listar**: `GET /getSucursales`.
+- **Crear** (`/sucursales/nueva`): `POST /ingresarSucursal`. Igual que
+  en Usuarios, `fechaCreacion` se genera con `dayjs` sin mostrarse en
+  el formulario.
+- **Editar** (`/sucursales/:idSucursal/editar`):
+  `PUT /actualizar-sucursal`.
+- **Eliminar**: `DELETE /eliminarSucursal/:idSucursal` (soft delete —
+  tu DAO marca `estado = 'N'`, no borra el registro).
+
+**Latitud/longitud no están en el formulario** — ni
+`ingresarSucursalDao` ni `actualizarSucursalDao` las tocan (existen en
+la tabla y en el `SELECT`, pero ningún INSERT/UPDATE las setea), así
+que no hay forma de guardarlas todavía. Si vas a agregar geolocalización
+más adelante, avísame cuando el backend las soporte y agrego los campos.
+
+**El selector de Sucursal en el formulario de Usuarios ya usa datos
+reales** (`useSucursales()` dentro de `UsuarioForm.tsx`), con sus
+propios estados de carga ("Cargando…") y error (si falla, cae a un
+campo numérico de respaldo con aviso, para no bloquear la creación de
+usuarios si el servicio de sucursales está caído).
 
 ## Cómo seguimos
 

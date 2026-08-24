@@ -9,6 +9,9 @@ import { PerfilPage } from '@/features/perfil/pages/PerfilPage';
 import { UsuariosPage } from '@/features/usuarios/pages/UsuariosPage';
 import { CrearUsuarioPage } from '@/features/usuarios/pages/CrearUsuarioPage';
 import { EditarUsuarioPage } from '@/features/usuarios/pages/EditarUsuarioPage';
+import { SucursalesPage } from '@/features/sucursales/pages/SucursalesPage';
+import { CrearSucursalPage } from '@/features/sucursales/pages/CrearSucursalPage';
+import { EditarSucursalPage } from '@/features/sucursales/pages/EditarSucursalPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -80,6 +83,31 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/users">
                       <EditarUsuarioPage />
+                    </RequirePermission>
+                  }
+                />
+
+                <Route
+                  path="/sucursales"
+                  element={
+                    <RequirePermission ruta="/sucursales">
+                      <SucursalesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/sucursales/nueva"
+                  element={
+                    <RequirePermission ruta="/sucursales">
+                      <CrearSucursalPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/sucursales/:idSucursal/editar"
+                  element={
+                    <RequirePermission ruta="/sucursales">
+                      <EditarSucursalPage />
                     </RequirePermission>
                   }
                 />
