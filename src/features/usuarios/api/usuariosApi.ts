@@ -55,8 +55,12 @@ export async function eliminarUsuario(idUsuario: number): Promise<EliminarUsuari
 export async function resetearContrasenia(
   idUsuario: number,
 ): Promise<ResetearContraseniaResponse> {
-  const { data } = await httpClient.put<ResetearContraseniaResponse>('/resetear-contrasenia', null, {
-    params: { idUsuario },
-  });
+  const { data } = await httpClient.put<ResetearContraseniaResponse>(
+    '/resetear-contrasenia',
+    undefined,
+    {
+      params: { idUsuario },
+    },
+  );
   return data;
 }
