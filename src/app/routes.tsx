@@ -12,6 +12,9 @@ import { EditarUsuarioPage } from '@/features/usuarios/pages/EditarUsuarioPage';
 import { SucursalesPage } from '@/features/sucursales/pages/SucursalesPage';
 import { CrearSucursalPage } from '@/features/sucursales/pages/CrearSucursalPage';
 import { EditarSucursalPage } from '@/features/sucursales/pages/EditarSucursalPage';
+import { RolesPage } from '@/features/roles/pages/RolesPage';
+import { CrearRolPage } from '@/features/roles/pages/CrearRolPage';
+import { EditarRolPage } from '@/features/roles/pages/EditarRolPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -83,6 +86,31 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/users">
                       <EditarUsuarioPage />
+                    </RequirePermission>
+                  }
+                />
+
+                <Route
+                  path="/users/roles"
+                  element={
+                    <RequirePermission ruta="/users/roles">
+                      <RolesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/users/roles/nuevo"
+                  element={
+                    <RequirePermission ruta="/users/roles">
+                      <CrearRolPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/users/roles/:idRol/editar"
+                  element={
+                    <RequirePermission ruta="/users/roles">
+                      <EditarRolPage />
                     </RequirePermission>
                   }
                 />

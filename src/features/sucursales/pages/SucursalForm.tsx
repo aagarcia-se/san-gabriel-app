@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react';
+import { Building2, MapPin, Phone, Mail, Map } from 'lucide-react';
+import { IconField } from '@/shared/ui/IconField';
 
 export interface SucursalFormValues {
   nombreSucursal: string;
@@ -55,30 +57,34 @@ export function SucursalForm({
         <label htmlFor="nombreSucursal" className="text-sm font-medium text-ink/80">
           Nombre
         </label>
-        <input
-          id="nombreSucursal"
-          type="text"
-          required
-          value={values.nombreSucursal}
-          onChange={(e) => setField('nombreSucursal', e.target.value)}
-          disabled={isSubmitting}
-          className="input"
-        />
+        <IconField icon={Building2}>
+          <input
+            id="nombreSucursal"
+            type="text"
+            required
+            value={values.nombreSucursal}
+            onChange={(e) => setField('nombreSucursal', e.target.value)}
+            disabled={isSubmitting}
+            className="input pl-9"
+          />
+        </IconField>
       </div>
 
       <div className="space-y-1.5">
         <label htmlFor="direccionSucursal" className="text-sm font-medium text-ink/80">
           Dirección
         </label>
-        <input
-          id="direccionSucursal"
-          type="text"
-          required
-          value={values.direccionSucursal}
-          onChange={(e) => setField('direccionSucursal', e.target.value)}
-          disabled={isSubmitting}
-          className="input"
-        />
+        <IconField icon={MapPin}>
+          <input
+            id="direccionSucursal"
+            type="text"
+            required
+            value={values.direccionSucursal}
+            onChange={(e) => setField('direccionSucursal', e.target.value)}
+            disabled={isSubmitting}
+            className="input pl-9"
+          />
+        </IconField>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -86,30 +92,34 @@ export function SucursalForm({
           <label htmlFor="municipioSucursal" className="text-sm font-medium text-ink/80">
             Municipio
           </label>
-          <input
-            id="municipioSucursal"
-            type="text"
-            required
-            value={values.municipioSucursal}
-            onChange={(e) => setField('municipioSucursal', e.target.value)}
-            disabled={isSubmitting}
-            className="input"
-          />
+          <IconField icon={Map}>
+            <input
+              id="municipioSucursal"
+              type="text"
+              required
+              value={values.municipioSucursal}
+              onChange={(e) => setField('municipioSucursal', e.target.value)}
+              disabled={isSubmitting}
+              className="input pl-9"
+            />
+          </IconField>
         </div>
 
         <div className="space-y-1.5">
           <label htmlFor="departamentoSucursal" className="text-sm font-medium text-ink/80">
             Departamento
           </label>
-          <input
-            id="departamentoSucursal"
-            type="text"
-            required
-            value={values.departamentoSucursal}
-            onChange={(e) => setField('departamentoSucursal', e.target.value)}
-            disabled={isSubmitting}
-            className="input"
-          />
+          <IconField icon={Map}>
+            <input
+              id="departamentoSucursal"
+              type="text"
+              required
+              value={values.departamentoSucursal}
+              onChange={(e) => setField('departamentoSucursal', e.target.value)}
+              disabled={isSubmitting}
+              className="input pl-9"
+            />
+          </IconField>
         </div>
       </div>
 
@@ -118,30 +128,34 @@ export function SucursalForm({
           <label htmlFor="telefonoSucursal" className="text-sm font-medium text-ink/80">
             Teléfono
           </label>
-          <input
-            id="telefonoSucursal"
-            type="tel"
-            required
-            value={values.telefonoSucursal}
-            onChange={(e) => setField('telefonoSucursal', e.target.value)}
-            disabled={isSubmitting}
-            className="input"
-          />
+          <IconField icon={Phone}>
+            <input
+              id="telefonoSucursal"
+              type="tel"
+              required
+              value={values.telefonoSucursal}
+              onChange={(e) => setField('telefonoSucursal', e.target.value)}
+              disabled={isSubmitting}
+              className="input pl-9"
+            />
+          </IconField>
         </div>
 
         <div className="space-y-1.5">
           <label htmlFor="correoSucursal" className="text-sm font-medium text-ink/80">
             Correo
           </label>
-          <input
-            id="correoSucursal"
-            type="email"
-            required
-            value={values.correoSucursal}
-            onChange={(e) => setField('correoSucursal', e.target.value)}
-            disabled={isSubmitting}
-            className="input"
-          />
+          <IconField icon={Mail}>
+            <input
+              id="correoSucursal"
+              type="email"
+              required
+              value={values.correoSucursal}
+              onChange={(e) => setField('correoSucursal', e.target.value)}
+              disabled={isSubmitting}
+              className="input pl-9"
+            />
+          </IconField>
         </div>
       </div>
 

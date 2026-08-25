@@ -29,4 +29,13 @@ export const queryKeys = {
     all: ['sucursales'] as const,
     list: () => [...queryKeys.sucursales.all, 'list'] as const,
   },
+  roles: {
+    all: ['roles'] as const,
+    list: () => [...queryKeys.roles.all, 'list'] as const,
+    permisos: (idRol: number) => [...queryKeys.roles.all, 'permisos', idRol] as const,
+  },
+  permisos: {
+    all: ['permisos'] as const,
+    list: () => [...queryKeys.permisos.all, 'list'] as const,
+  },
 };

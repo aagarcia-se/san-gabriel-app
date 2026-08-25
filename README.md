@@ -457,7 +457,44 @@ más adelante, avísame cuando el backend las soporte y agrego los campos.
 reales** (`useSucursales()` dentro de `UsuarioForm.tsx`), con sus
 propios estados de carga ("Cargando…") y error (si falla, cae a un
 campo numérico de respaldo con aviso, para no bloquear la creación de
-usuarios si el servicio de sucursales está caído).
+usuarios si el servicio de sucursales está caído). **El selector de
+Rol ya también** (ver módulo de Roles abajo).
+
+## Módulo: Roles y permisos
+
+- **Roles** — CRUD completo en `src/features/roles/`: listar (con los
+  permisos de cada rol visibles al expandir la tarjeta), crear, editar,
+  eliminar.
+  - **`eliminarRolDao` hace un `DELETE` real**, no un soft delete como
+    el resto de módulos — al eliminar un rol, desaparece de la base de
+    datos para siempre. El diálogo de confirmación lo dice explícito.
+- **Permisos** — solo lectura (`src/features/permisos/`). Como
+  confirmaste, los permisos se crean directo en base de datos, así que
+  no hay pantallas de crear/editar/eliminar — `usePermisos()` solo
+  alimenta el checklist de permisos al crear/editar un rol.
+- **Asignación de permisos a un rol**: usa los endpoints **batch**
+  (`POST /ingresarPermisosBatch`, `POST /eliminarRolPermisosBatch`),
+  como pediste, en vez de los de a uno. Al guardar un rol:
+  1. Se guarda nombre/descripción (`ingresarRol` o `actualizarRol/`).
+  2. Al **crear**: si hay permisos marcados, un solo batch los asigna
+     todos.
+  3. Al **editar**: se compara el checklist actual contra
+     `consultarRolesPermisosId/:idRol` (lo que el rol ya tenía) — los
+     que se marcaron de nuevo van en un batch de alta, los que se
+     desmarcaron van en un batch de baja. Nunca se tocan los que no
+     cambiaron.
+- Ver permisos de un rol en el listado: cada tarjeta se puede
+  expandir — ahí se consulta `consultarRolesPermisosId/:idRol` (solo
+  para ese rol, solo cuando se expande) y se cruzan los IDs contra el
+  catálogo de permisos para mostrar los nombres como badges.
+
+## Íconos en los formularios
+
+Se agregó `src/shared/ui/IconField.tsx` — envuelve cualquier
+`<input>`/`<select>` con un ícono a la izquierda (mismo patrón que ya
+usaban los buscadores). Aplicado a todos los formularios existentes:
+Usuario (nombre, apellido, correo, rol, sucursal), Sucursal (nombre,
+dirección, municipio/departamento, teléfono, correo) y Rol (nombre).
 
 ## Cómo seguimos
 
