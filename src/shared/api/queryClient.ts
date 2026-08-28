@@ -38,4 +38,12 @@ export const queryKeys = {
     all: ['permisos'] as const,
     list: () => [...queryKeys.permisos.all, 'list'] as const,
   },
+  productos: {
+    all: ['productos'] as const,
+    list: () => [...queryKeys.productos.all, 'list'] as const,
+  },
+  precios: {
+    all: ['precios'] as const,
+    list: () => [...queryKeys.precios.all, 'list'] as const,
+  },
 };

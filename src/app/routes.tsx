@@ -15,6 +15,9 @@ import { EditarSucursalPage } from '@/features/sucursales/pages/EditarSucursalPa
 import { RolesPage } from '@/features/roles/pages/RolesPage';
 import { CrearRolPage } from '@/features/roles/pages/CrearRolPage';
 import { EditarRolPage } from '@/features/roles/pages/EditarRolPage';
+import { ProductosPage } from '@/features/productos/pages/ProductosPage';
+import { CrearProductoPage } from '@/features/productos/pages/CrearProductoPage';
+import { EditarProductoPage } from '@/features/productos/pages/EditarProductoPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { RequirePermission } from '@/features/auth/components/RequirePermission';
@@ -140,16 +143,33 @@ export function AppRoutes() {
                   }
                 />
 
+                <Route
+                  path="/productos"
+                  element={
+                    <RequirePermission ruta="/productos">
+                      <ProductosPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/productos/nuevo"
+                  element={
+                    <RequirePermission ruta="/productos">
+                      <CrearProductoPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/productos/:idProducto/editar"
+                  element={
+                    <RequirePermission ruta="/productos">
+                      <EditarProductoPage />
+                    </RequirePermission>
+                  }
+                />
+
                 {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
-                    RequirePermission con la misma rutaAcceso del permiso:
-                    <Route
-                      path="/productos"
-                      element={
-                        <RequirePermission ruta="/productos">
-                          <ProductosPage />
-                        </RequirePermission>
-                      }
-                    />
+                    RequirePermission con la misma rutaAcceso del permiso.
                     Así, aunque el usuario escriba la URL directamente,
                     solo entra si su rol realmente tiene ese permiso. */}
 

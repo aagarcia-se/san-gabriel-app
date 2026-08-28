@@ -31,9 +31,14 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="flex min-h-screen bg-bg">
       <Sidebar />
-      <div className="flex min-h-screen flex-1 flex-col">
+      {/* min-w-0: un flex item sin esto NO se encoge por debajo del
+          ancho de su contenido — si algo adentro es más ancho de lo
+          normal (texto sin truncar, etc.), esta columna empuja todo
+          el documento más allá del viewport, y en móvil eso saca la
+          barra inferior (fixed) fuera de vista hasta alejar el zoom. */}
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="app-container flex-1 py-6 pb-[calc(var(--bottom-nav-height)+1.5rem)] md:pb-6">
+        <main className="app-container min-w-0 flex-1 py-6 pb-[calc(var(--bottom-nav-height)+1.5rem)] md:pb-6">
           {children}
         </main>
       </div>
