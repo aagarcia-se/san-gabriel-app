@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Croissant, Pencil, Plus, Search } from 'lucide-react';
-import { useProductos, type ProductoConPrecio } from '../api/useProductos';
+import { useProductos } from '../api/useProductos';
 import { Spinner } from '@/shared/ui/Spinner';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { Badge } from '@/shared/ui/Badge';
+import type { ProductoConPrecio } from '../types/precio.types';
 
 export function ProductosPage() {
   const { data: productos, isLoading, isError, error, refetch } = useProductos();
@@ -16,7 +16,7 @@ export function ProductosPage() {
     const term = search.trim().toLowerCase();
     if (!term) return productos;
     return productos.filter((p) =>
-      [p.nombreProducto, p.precio?.nombreCategoria].join(' ').toLowerCase().includes(term),
+      `${p.nombreProducto} ${p.nombreCategoria}`.toLowerCase().includes(term),
     );
   }, [productos, search]);
 
@@ -54,7 +54,7 @@ export function ProductosPage() {
           description={
             search
               ? 'Prueba con otro término de búsqueda.'
-              : 'Los productos que se creen van a aparecer aquí.'
+              : 'Solo se listan productos activos con precio cargado.'
           }
         />
       )}
@@ -76,7 +76,7 @@ export function ProductosPage() {
                   <th className="px-4 py-3 font-medium">Nombre</th>
                   <th className="px-4 py-3 font-medium">Categoría</th>
                   <th className="px-4 py-3 font-medium">Precio</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Producción</th>
                   <th className="px-4 py-3 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
@@ -84,15 +84,11 @@ export function ProductosPage() {
                 {filtered.map((producto) => (
                   <tr key={producto.idProducto} className="transition-colors hover:bg-surface-2">
                     <td className="px-4 py-3 font-medium text-ink">{producto.nombreProducto}</td>
+                    <td className="px-4 py-3 text-muted">{producto.nombreCategoria}</td>
                     <td className="px-4 py-3 text-muted">
-                      {producto.precio?.nombreCategoria ?? `#${producto.idCategoria}`}
+                      {producto.cantidad} × Q{producto.precio}
                     </td>
-                    <td className="px-4 py-3 text-muted">
-                      <PrecioTexto producto={producto} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <EstadoBadge estado={producto.estado} />
-                    </td>
+                    <td className="px-4 py-3 capitalize text-muted">{producto.tipoProduccion}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end">
                         <Link
@@ -126,43 +122,25 @@ function ProductoCard({ producto }: { producto: ProductoConPrecio }) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-ink">{producto.nombreProducto}</p>
-            <p className="truncate text-xs text-muted">
-              {producto.precio?.nombreCategoria ?? `Categoría #${producto.idCategoria}`}
-            </p>
+            <p className="truncate text-xs text-muted">{producto.nombreCategoria}</p>
           </div>
         </div>
-        <EstadoBadge estado={producto.estado} />
-      </div>
-
-      <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
-        <PrecioTexto producto={producto} />
         <Link
           to={`/productos/${producto.idProducto}/editar`}
           aria-label="Editar"
           title="Editar"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
           <Pencil className="h-4 w-4" />
         </Link>
       </div>
+
+      <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
+        <span>
+          {producto.cantidad} × Q{producto.precio}
+        </span>
+        <span className="capitalize">{producto.tipoProduccion}</span>
+      </div>
     </div>
-  );
-}
-
-function PrecioTexto({ producto }: { producto: ProductoConPrecio }) {
-  if (!producto.precio) return <span>Sin precio</span>;
-  const { cantidad, precio } = producto.precio;
-  return (
-    <span>
-      {cantidad} × Q{precio}
-    </span>
-  );
-}
-
-function EstadoBadge({ estado }: { estado: ProductoConPrecio['estado'] }) {
-  return estado === 'A' ? (
-    <Badge variant="success">Activo</Badge>
-  ) : (
-    <Badge variant="danger">Inactivo</Badge>
   );
 }

@@ -6,7 +6,18 @@ import type {
   IngresarProductoRequest,
   IngresarProductoResponse,
 } from '../types/producto.types';
+import type { ConsultarProductosConPreciosResponse } from '../types/precio.types';
 
+// Fuente única para la sección de Productos por ahora (ver useProductos.ts).
+export async function getProductosConPrecios(): Promise<ConsultarProductosConPreciosResponse> {
+  const { data } = await httpClient.get<ConsultarProductosConPreciosResponse>(
+    '/productos-con-precios',
+  );
+  return data;
+}
+
+// Sin usar por ahora — se deja implementado por si hace falta más
+// adelante (ej. una pantalla que también muestre productos inactivos).
 export async function getProductos(): Promise<ConsultarProductosResponse> {
   const { data } = await httpClient.get<ConsultarProductosResponse>('/consultarProductos');
   return data;

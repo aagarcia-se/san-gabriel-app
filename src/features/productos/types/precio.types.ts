@@ -40,3 +40,12 @@ export interface PrecioProducto {
 // GET /consultarPrecios responde:
 // { status, message, preciosProductos: [...] }
 export type ConsultarPreciosResponse = WithPayload<'preciosProductos', PrecioProducto[]>;
+
+// GET /productos-con-precios — MISMO JOIN y MISMO filtro (estado='A')
+// que consultarPrecios, solo que expone la key como "productos". Es la
+// fuente ÚNICA que usa la sección de Productos por ahora (lista, crear,
+// editar) — un solo viaje, ya trae producto + categoría + precio +
+// config de stock juntos. No incluye "estado" en el SELECT porque el
+// filtro ya garantiza que siempre es 'A'.
+export type ProductoConPrecio = PrecioProducto;
+export type ConsultarProductosConPreciosResponse = WithPayload<'productos', ProductoConPrecio[]>;
