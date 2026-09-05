@@ -145,7 +145,7 @@ export const menuSchema: MenuEntry[] = [
       },
       {
         type: 'link',
-        to: '/config',
+        to: '/recetas',
         label: 'Materia prima',
         icon: Wheat,
         rutaAcceso: '/config',

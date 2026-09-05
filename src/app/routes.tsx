@@ -27,6 +27,8 @@ import { MenuGroupPage } from '@/shared/layout/MenuGroupPage';
 import { CategoriasPage } from '@/features/categorias/page/CategoriasPage';
 import { CrearCategoriaPage } from '@/features/categorias/page/CrearCategoriaPage';
 import { EditarCategoriaPage } from '@/features/categorias/page/EditarCategoriaPage';
+import { RecetasPage } from '@/features/recetas/pages/RecetasPage';
+import { CrearRecetaPage } from '@/features/recetas/pages/CrearRecetaPage';
 
 export function AppRoutes() {
   return (
@@ -191,6 +193,22 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/categorias">
                       <EditarCategoriaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/recetas"
+                  element={
+                    <RequirePermission ruta="/config">
+                      <RecetasPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/recetas/nuevo"
+                  element={
+                    <RequirePermission ruta="/config">
+                      <CrearRecetaPage />
                     </RequirePermission>
                   }
                 />

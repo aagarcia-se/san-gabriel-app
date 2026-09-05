@@ -49,5 +49,9 @@ export const queryKeys = {
   categorias: {
     all: ['categorias'] as const,
     list: () => [...queryKeys.categorias.all, 'list'] as const
+  },
+  recetas: {
+    all: ['recetas'] as const,
+    list: () => [...queryKeys.recetas.all, 'list'] as const
   }
 };
