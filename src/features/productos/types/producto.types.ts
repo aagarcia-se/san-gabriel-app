@@ -49,3 +49,9 @@ export interface ActualizarProductoRequest {
 // La key se llama "precioActualizado" en el controller real aunque es
 // el producto lo que se actualiza — así quedó del lado del backend.
 export type ActualizarProductoResponse = WithPayload<'precioActualizado', number>;
+
+// DELETE /desactivarProducto/:idProducto — borrado LÓGICO (pone
+// estado='N'), no elimina el registro. Como /productos-con-precios ya
+// filtra estado='A', el producto simplemente deja de aparecer en la
+// lista después de esto.
+export type DesactivarProductoResponse = WithPayload<'produtoDesactivado', number>;

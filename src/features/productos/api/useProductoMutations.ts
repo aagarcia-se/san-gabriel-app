@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { actualizarProducto, ingresarProducto } from './productosApi';
-import { actualizarPrecio, ingresarPrecio } from './preciosApi';
+import { actualizarPrecio, desactivarProducto, ingresarPrecio } from './preciosApi';
 import { queryKeys } from '@/shared/api/queryClient';
 
 export function useIngresarProducto() {
@@ -39,6 +39,16 @@ export function useActualizarPrecio() {
     mutationFn: actualizarPrecio,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.precios.list() });
+    },
+  });
+}
+
+export function useDescativarProducto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: desactivarProducto,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.productos.list() });
     },
   });
 }

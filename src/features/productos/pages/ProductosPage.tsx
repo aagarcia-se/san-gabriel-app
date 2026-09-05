@@ -1,15 +1,21 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Croissant, Pencil, Plus, Search } from 'lucide-react';
+import { Croissant, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useProductos } from '../api/useProductos';
 import { Spinner } from '@/shared/ui/Spinner';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
+import { cn } from '@/shared/lib/cn';
 import type { ProductoConPrecio } from '../types/precio.types';
+import { useDescativarProducto } from '../api/useProductoMutations';
 
 export function ProductosPage() {
   const { data: productos, isLoading, isError, error, refetch } = useProductos();
+  const desactivarProducto = useDescativarProducto();
+
   const [search, setSearch] = useState('');
+  const [productoADesactivar, setProductoADesactivar] = useState<ProductoConPrecio | null>(null);
 
   const filtered = useMemo(() => {
     if (!productos) return [];
@@ -19,6 +25,13 @@ export function ProductosPage() {
       `${p.nombreProducto} ${p.nombreCategoria}`.toLowerCase().includes(term),
     );
   }, [productos, search]);
+
+  function handleConfirmDesactivar() {
+    if (!productoADesactivar) return;
+    desactivarProducto.mutate(productoADesactivar.idProducto, {
+      onSuccess: () => setProductoADesactivar(null),
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -64,7 +77,12 @@ export function ProductosPage() {
           {/* Móvil: tarjetas */}
           <div className="space-y-2 md:hidden">
             {filtered.map((producto) => (
-              <ProductoCard key={producto.idProducto} producto={producto} />
+              <ProductoCard
+                key={producto.idProducto}
+                producto={producto}
+                disabled={desactivarProducto.isPending}
+                onDesactivar={() => setProductoADesactivar(producto)}
+              />
             ))}
           </div>
 
@@ -90,16 +108,11 @@ export function ProductosPage() {
                     </td>
                     <td className="px-4 py-3 capitalize text-muted">{producto.tipoProduccion}</td>
                     <td className="px-4 py-3">
-                      <div className="flex justify-end">
-                        <Link
-                          to={`/productos/${producto.idProducto}/editar`}
-                          aria-label="Editar"
-                          title="Editar"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      </div>
+                      <RowActions
+                        producto={producto}
+                        disabled={desactivarProducto.isPending}
+                        onDesactivar={() => setProductoADesactivar(producto)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -108,11 +121,88 @@ export function ProductosPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={productoADesactivar !== null}
+        title="¿Desactivar producto?"
+        description={
+          productoADesactivar
+            ? `"${productoADesactivar.nombreProducto}" dejará de aparecer en el catálogo activo.`
+            : undefined
+        }
+        confirmLabel="Desactivar"
+        variant="danger"
+        isLoading={desactivarProducto.isPending}
+        onConfirm={handleConfirmDesactivar}
+        onCancel={() => setProductoADesactivar(null)}
+      />
     </div>
   );
 }
 
-function ProductoCard({ producto }: { producto: ProductoConPrecio }) {
+interface ActionsProps {
+  producto: ProductoConPrecio;
+  disabled: boolean;
+  onDesactivar: () => void;
+}
+
+function RowActions({ producto, disabled, onDesactivar }: ActionsProps) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <Link
+        to={`/productos/${producto.idProducto}/editar`}
+        aria-label="Editar"
+        title="Editar"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+      >
+        <Pencil className="h-4 w-4" />
+      </Link>
+      <IconActionButton
+        label="Desactivar"
+        icon={Trash2}
+        variant="danger"
+        disabled={disabled}
+        onClick={onDesactivar}
+      />
+    </div>
+  );
+}
+
+function IconActionButton({
+  label,
+  icon: Icon,
+  onClick,
+  disabled,
+  variant = 'default',
+}: {
+  label: string;
+  icon: typeof Trash2;
+  onClick: () => void;
+  disabled?: boolean;
+  variant?: 'default' | 'danger';
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40',
+        variant === 'danger' && 'hover:bg-danger-500/10 hover:text-danger-600 dark:hover:text-danger-400',
+      )}
+    >
+      <Icon className="h-4 w-4" />
+    </button>
+  );
+}
+
+function ProductoCard({
+  producto,
+  disabled,
+  onDesactivar,
+}: ActionsProps) {
   return (
     <div className="card">
       <div className="flex items-start justify-between gap-3">
@@ -125,14 +215,6 @@ function ProductoCard({ producto }: { producto: ProductoConPrecio }) {
             <p className="truncate text-xs text-muted">{producto.nombreCategoria}</p>
           </div>
         </div>
-        <Link
-          to={`/productos/${producto.idProducto}/editar`}
-          aria-label="Editar"
-          title="Editar"
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-        >
-          <Pencil className="h-4 w-4" />
-        </Link>
       </div>
 
       <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
@@ -140,6 +222,10 @@ function ProductoCard({ producto }: { producto: ProductoConPrecio }) {
           {producto.cantidad} × Q{producto.precio}
         </span>
         <span className="capitalize">{producto.tipoProduccion}</span>
+      </div>
+
+      <div className="mt-3 flex items-center justify-end gap-1 border-t border-line pt-3">
+        <RowActions producto={producto} disabled={disabled} onDesactivar={onDesactivar} />
       </div>
     </div>
   );

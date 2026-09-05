@@ -5,6 +5,7 @@ import type {
   IngresarPrecioResponse,
   PrecioRequest,
 } from '../types/precio.types';
+import { DesactivarProductoResponse } from '../types/producto.types';
 
 export async function getPrecios(): Promise<ConsultarPreciosResponse> {
   const { data } = await httpClient.get<ConsultarPreciosResponse>('/consultarPrecios');
@@ -20,5 +21,12 @@ export async function actualizarPrecio(
   payload: PrecioRequest,
 ): Promise<ActualizarPrecioResponse> {
   const { data } = await httpClient.put<ActualizarPrecioResponse>('/actualizarPrecio/', payload);
+  return data;
+}
+
+export async function desactivarProducto(idProducto: number): Promise<DesactivarProductoResponse> {
+  const { data } = await httpClient.delete<DesactivarProductoResponse>(
+    `/desactivarProducto/${idProducto}`,
+  );
   return data;
 }
