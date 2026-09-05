@@ -27,11 +27,9 @@ export interface CrearRecetaRequest {
 }
 export type CrearRecetaResponse = WithPayload<'idReceta', number>;
 
-export interface ActualizarRecetaRequest {
-  idReceta: number;
-  idIngrediente: number;
-  cantidadNecesaria: string;
-}
+// Misma forma que CrearRecetaRequest — el backend actualiza la
+// receta completa del producto en base al mismo detalle.
+export type ActualizarRecetaRequest = CrearRecetaRequest;
 export type ActualizarRecetaResponse = WithPayload<'recetaActualizada', number>;
 
 export type EliminarRecetaResponse = WithPayload<'recetaEliminada', number>;

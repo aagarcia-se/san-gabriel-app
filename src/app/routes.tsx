@@ -29,6 +29,7 @@ import { CrearCategoriaPage } from '@/features/categorias/page/CrearCategoriaPag
 import { EditarCategoriaPage } from '@/features/categorias/page/EditarCategoriaPage';
 import { RecetasPage } from '@/features/recetas/pages/RecetasPage';
 import { CrearRecetaPage } from '@/features/recetas/pages/CrearRecetaPage';
+import { EditarRecetaPage } from '@/features/recetas/pages/EditarRecetaPage';
 
 export function AppRoutes() {
   return (
@@ -209,6 +210,14 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/config">
                       <CrearRecetaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/recetas/:idProducto/editar"
+                  element={
+                    <RequirePermission ruta="/config">
+                      <EditarRecetaPage />
                     </RequirePermission>
                   }
                 />
