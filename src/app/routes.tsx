@@ -25,6 +25,8 @@ import { RootRedirect } from '@/features/auth/components/RootRedirect';
 import { MasPage } from '@/features/menu/pages/MasPage';
 import { MenuGroupPage } from '@/shared/layout/MenuGroupPage';
 import { CategoriasPage } from '@/features/categorias/page/CategoriasPage';
+import { CrearCategoriaPage } from '@/features/categorias/page/CrearCategoriaPage';
+import { EditarCategoriaPage } from '@/features/categorias/page/EditarCategoriaPage';
 
 export function AppRoutes() {
   return (
@@ -173,6 +175,22 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/categorias">
                       <CategoriasPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/categorias/nuevo"
+                  element={
+                    <RequirePermission ruta="/categorias">
+                      <CrearCategoriaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="categorias/:idCategoria/editar"
+                  element={
+                    <RequirePermission ruta="/categorias">
+                      <EditarCategoriaPage />
                     </RequirePermission>
                   }
                 />

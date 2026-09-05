@@ -4,6 +4,7 @@ import { IconField } from '@/shared/ui/IconField';
 import { cn } from '@/shared/lib/cn';
 import { computePrecioPorUnidad, type ControlType } from '../lib/productoHelpers';
 import type { TipoProduccion } from '../types/producto.types';
+import { useCategorias } from '@/features/categorias/api/useCategorias';
 
 export interface ProductoFormValues {
   nombreProducto: string;
@@ -59,6 +60,12 @@ export function ProductoForm({
     ...initialValues,
   });
 
+  const {
+    data: categorias,
+    isLoading: isLoadingCategorias,
+    isError: isCategoriasError,
+  } = useCategorias();
+
   function setField<K extends keyof ProductoFormValues>(field: K, value: ProductoFormValues[K]) {
     setValues((prev) => ({ ...prev, [field]: value }));
   }
@@ -92,23 +99,45 @@ export function ProductoForm({
 
         <div className="space-y-1.5">
           <label htmlFor="idCategoria" className="text-sm font-medium text-ink/80">
-            ID de categoría
+            Categoría
           </label>
-          <IconField icon={Layers}>
-            <input
-              id="idCategoria"
-              type="number"
-              min={1}
-              required
-              value={values.idCategoria}
-              onChange={(e) => setField('idCategoria', e.target.value)}
-              disabled={isSubmitting}
-              className="input pl-9"
-            />
-          </IconField>
-          <p className="text-xs text-muted">
-            Por ahora se escribe a mano — va a ser un selector en cuanto conectemos Categorías.
-          </p>
+          {isCategoriasError ? (
+            <>
+              <input
+                id="idCategoria"
+                type="number"
+                min={1}
+                required
+                value={values.idCategoria}
+                onChange={(e) => setField('idCategoria', e.target.value)}
+                disabled={isSubmitting}
+                className="input"
+              />
+              <p className="text-xs text-danger-600 dark:text-danger-400">
+                No se pudo cargar la lista de categorías — escribe el ID a mano.
+              </p>
+            </>
+          ) : (
+            <IconField icon={Layers}>
+              <select
+                id="idCategoria"
+                required
+                value={values.idCategoria}
+                onChange={(e) => setField('idCategoria', e.target.value)}
+                disabled={isSubmitting || isLoadingCategorias}
+                className="input pl-9"
+              >
+                <option value="" disabled>
+                  {isLoadingCategorias ? 'Cargando…' : 'Selecciona una categoría'}
+                </option>
+                {categorias?.map((categoria) => (
+                  <option key={categoria.idCategoria} value={categoria.idCategoria}>
+                    {categoria.nombreCategoria}
+                  </option>
+                ))}
+              </select>
+            </IconField>
+          )}
         </div>
       </div>
 
