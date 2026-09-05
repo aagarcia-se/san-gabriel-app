@@ -24,6 +24,7 @@ import { RequirePermission } from '@/features/auth/components/RequirePermission'
 import { RootRedirect } from '@/features/auth/components/RootRedirect';
 import { MasPage } from '@/features/menu/pages/MasPage';
 import { MenuGroupPage } from '@/shared/layout/MenuGroupPage';
+import { CategoriasPage } from '@/features/categorias/page/CategoriasPage';
 
 export function AppRoutes() {
   return (
@@ -164,6 +165,14 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/productos">
                       <EditarProductoPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/categorias"
+                  element={
+                    <RequirePermission ruta="/categorias">
+                      <CategoriasPage />
                     </RequirePermission>
                   }
                 />
