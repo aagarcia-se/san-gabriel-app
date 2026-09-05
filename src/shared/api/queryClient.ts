@@ -48,6 +48,6 @@ export const queryKeys = {
   },
   categorias: {
     all: ['categorias'] as const,
-    list: () => [...queryKeys.productos.all, 'list'] as const
+    list: () => [...queryKeys.categorias.all, 'list'] as const
   }
 };
