@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
+import { ButtonSpinner } from '../components/ButtonSpinner';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -64,6 +65,7 @@ export function ConfirmDialog({
                 : 'btn-primary'
             }
           >
+            {isLoading && <ButtonSpinner />}
             {isLoading ? 'Espera…' : confirmLabel}
           </button>
         </div>
