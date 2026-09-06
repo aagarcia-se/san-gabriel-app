@@ -53,5 +53,10 @@ export const queryKeys = {
   recetas: {
     all: ['recetas'] as const,
     list: () => [...queryKeys.recetas.all, 'list'] as const
+  },
+  notificaciones: {
+    all: ['notificaciones'] as const,
+    list: () => [...queryKeys.notificaciones.all, 'list'] as const
   }
+
 };

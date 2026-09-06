@@ -31,10 +31,7 @@ export interface IngresarSucursalRequest {
   correoSucursal: string;
   fechaCreacion: string;
 }
-export type IngresarSucursalResponse = WithPayload<
-  'sucursal',
-  { idSucursal: number } & IngresarSucursalRequest
->;
+export type IngresarSucursalResponse = WithPayload<'sucursal',{ idSucursal: number } & IngresarSucursalRequest>;
 
 // PUT /actualizar-sucursal — tampoco toca lat/long.
 export interface ActualizarSucursalRequest {

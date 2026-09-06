@@ -30,6 +30,7 @@ import { EditarCategoriaPage } from '@/features/categorias/page/EditarCategoriaP
 import { RecetasPage } from '@/features/recetas/pages/RecetasPage';
 import { CrearRecetaPage } from '@/features/recetas/pages/CrearRecetaPage';
 import { EditarRecetaPage } from '@/features/recetas/pages/EditarRecetaPage';
+import { NotificacionesPage } from '@/features/notificaciones/page/NotificacionesPage';
 
 export function AppRoutes() {
   return (
@@ -221,7 +222,14 @@ export function AppRoutes() {
                     </RequirePermission>
                   }
                 />
-
+                <Route
+                  path="/habilitar-notificaciones"
+                  element={
+                    <RequirePermission ruta="/habilitar-notificaciones">
+                      <NotificacionesPage />
+                    </RequirePermission>
+                  }
+                />
                 {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
                     RequirePermission con la misma rutaAcceso del permiso.
                     Así, aunque el usuario escriba la URL directamente,
