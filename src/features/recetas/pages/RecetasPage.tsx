@@ -9,6 +9,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { cn } from '@/shared/lib/cn';
+import type { ApiError } from '@/shared/api/httpClient';
 
 interface RecetaProducto {
   idProducto: number;
@@ -44,6 +45,7 @@ export function RecetasPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [ingredienteAEliminar, setIngredienteAEliminar] = useState<Receta | null>(null);
+  const [actionError, setActionError] = useState<string | undefined>();
 
   const productos = useMemo(() => {
     if (!recetas) return [];
@@ -62,9 +64,18 @@ export function RecetasPage() {
 
   function handleConfirmEliminar() {
     if (!ingredienteAEliminar) return;
-    eliminarReceta.mutate(ingredienteAEliminar.idProducto, {
+    setActionError(undefined);
+    eliminarReceta.mutate(ingredienteAEliminar.idReceta, {
       onSuccess: () => setIngredienteAEliminar(null),
+      onError: (err: unknown) => {
+        setActionError((err as ApiError).message ?? 'No se pudo eliminar la receta.');
+      },
     });
+  }
+
+  function handleCancel() {
+    setIngredienteAEliminar(null);
+    setActionError(undefined);
   }
 
   return (
@@ -117,7 +128,10 @@ export function RecetasPage() {
                 setExpandedId((prev) => (prev === producto.idProducto ? null : producto.idProducto))
               }
               disabled={eliminarReceta.isPending}
-              onEliminarIngrediente={setIngredienteAEliminar}
+              onEliminarIngrediente={(ingrediente) => {
+                setActionError(undefined);
+                setIngredienteAEliminar(ingrediente);
+              }}
             />
           ))}
         </div>
@@ -134,8 +148,9 @@ export function RecetasPage() {
         confirmLabel="Eliminar"
         variant="danger"
         isLoading={eliminarReceta.isPending}
+        errorMessage={actionError}
         onConfirm={handleConfirmEliminar}
-        onCancel={() => setIngredienteAEliminar(null)}
+        onCancel={handleCancel}
       />
     </div>
   );
@@ -156,11 +171,6 @@ function RecetaCard({
   disabled,
   onEliminarIngrediente,
 }: RecetaCardProps) {
-  // Botón de eliminar del header: apunta a la primera línea de la
-  // receta. Con recetas de un solo ingrediente (el caso actual) borra
-  // la receta completa; si en el futuro una receta tiene varias líneas,
-  // esta acción rápida solo quita la primera — las demás se eliminan
-  // individualmente expandiendo la tarjeta.
   const primeraLinea = producto.ingredientes[0];
 
   return (

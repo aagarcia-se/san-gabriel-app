@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { cn } from '@/shared/lib/cn';
 import type { ProductoConPrecio } from '../types/precio.types';
 import { useDescativarProducto } from '../api/useProductoMutations';
+import type { ApiError } from '@/shared/api/httpClient';
 
 export function ProductosPage() {
   const { data: productos, isLoading, isError, error, refetch } = useProductos();
@@ -16,6 +17,7 @@ export function ProductosPage() {
 
   const [search, setSearch] = useState('');
   const [productoADesactivar, setProductoADesactivar] = useState<ProductoConPrecio | null>(null);
+  const [actionError, setActionError] = useState<string | undefined>();
 
   const filtered = useMemo(() => {
     if (!productos) return [];
@@ -28,9 +30,18 @@ export function ProductosPage() {
 
   function handleConfirmDesactivar() {
     if (!productoADesactivar) return;
+    setActionError(undefined);
     desactivarProducto.mutate(productoADesactivar.idProducto, {
       onSuccess: () => setProductoADesactivar(null),
+      onError: (err: unknown) => {
+        setActionError((err as ApiError).message ?? 'No se pudo desactivar el producto.');
+      },
     });
+  }
+
+  function handleCancel() {
+    setProductoADesactivar(null);
+    setActionError(undefined);
   }
 
   return (
@@ -81,7 +92,10 @@ export function ProductosPage() {
                 key={producto.idProducto}
                 producto={producto}
                 disabled={desactivarProducto.isPending}
-                onDesactivar={() => setProductoADesactivar(producto)}
+                onDesactivar={() => {
+                  setActionError(undefined);
+                  setProductoADesactivar(producto);
+                }}
               />
             ))}
           </div>
@@ -111,7 +125,10 @@ export function ProductosPage() {
                       <RowActions
                         producto={producto}
                         disabled={desactivarProducto.isPending}
-                        onDesactivar={() => setProductoADesactivar(producto)}
+                        onDesactivar={() => {
+                          setActionError(undefined);
+                          setProductoADesactivar(producto);
+                        }}
                       />
                     </td>
                   </tr>
@@ -133,8 +150,9 @@ export function ProductosPage() {
         confirmLabel="Desactivar"
         variant="danger"
         isLoading={desactivarProducto.isPending}
+        errorMessage={actionError}
         onConfirm={handleConfirmDesactivar}
-        onCancel={() => setProductoADesactivar(null)}
+        onCancel={handleCancel}
       />
     </div>
   );

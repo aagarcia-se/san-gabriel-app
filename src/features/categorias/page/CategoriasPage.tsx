@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { Badge } from '@/shared/ui/Badge';
 import { cn } from '@/shared/lib/cn';
 import { Categoria } from '../types/categorias.types';
+import type { ApiError } from '@/shared/api/httpClient';
 
 export function CategoriasPage() {
   const { data: categorias, isLoading, isError, error, refetch } = useCategorias();
@@ -17,6 +18,7 @@ export function CategoriasPage() {
 
   const [search, setSearch] = useState('');
   const [categoriaADesactivar, setCategoriaADesactivar] = useState<Categoria | null>(null);
+  const [actionError, setActionError] = useState<string | undefined>();
 
   const filtered = useMemo(() => {
     if (!categorias) return [];
@@ -29,9 +31,18 @@ export function CategoriasPage() {
 
   function handleConfirmDesactivar() {
     if (!categoriaADesactivar) return;
+    setActionError(undefined);
     desactivarCategoria.mutate(categoriaADesactivar.idCategoria, {
       onSuccess: () => setCategoriaADesactivar(null),
+      onError: (err: unknown) => {
+        setActionError((err as ApiError).message ?? 'No se pudo desactivar la categoría.');
+      },
     });
+  }
+
+  function handleCancel() {
+    setCategoriaADesactivar(null);
+    setActionError(undefined);
   }
 
   return (
@@ -82,7 +93,10 @@ export function CategoriasPage() {
                 key={categoria.idCategoria}
                 categoria={categoria}
                 disabled={desactivarCategoria.isPending}
-                onDesactivar={() => setCategoriaADesactivar(categoria)}
+                onDesactivar={() => {
+                  setActionError(undefined);
+                  setCategoriaADesactivar(categoria);
+                }}
               />
             ))}
           </div>
@@ -110,7 +124,10 @@ export function CategoriasPage() {
                       <RowActions
                         categoria={categoria}
                         disabled={desactivarCategoria.isPending}
-                        onDesactivar={() => setCategoriaADesactivar(categoria)}
+                        onDesactivar={() => {
+                          setActionError(undefined);
+                          setCategoriaADesactivar(categoria);
+                        }}
                       />
                     </td>
                   </tr>
@@ -132,8 +149,9 @@ export function CategoriasPage() {
         confirmLabel="Desactivar"
         variant="danger"
         isLoading={desactivarCategoria.isPending}
+        errorMessage={actionError}
         onConfirm={handleConfirmDesactivar}
-        onCancel={() => setCategoriaADesactivar(null)}
+        onCancel={handleCancel}
       />
     </div>
   );
