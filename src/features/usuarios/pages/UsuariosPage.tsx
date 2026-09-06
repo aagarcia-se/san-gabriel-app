@@ -17,16 +17,26 @@ import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { cn } from '@/shared/lib/cn';
 import type { UsuarioListItem } from '../types/usuario.types';
+import type { ApiError } from '@/shared/api/httpClient';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 type ConfirmAction = {
   type: 'bloquear' | 'desbloquear' | 'eliminar' | 'resetear';
   usuario: UsuarioListItem;
 };
 
+interface MutationStates {
+  bloquear: boolean;
+  desbloquear: boolean;
+  eliminar: boolean;
+  resetear: boolean;
+}
+
 export function UsuariosPage() {
   const { data: usuarios, isLoading, isError, error, refetch } = useUsuarios();
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [actionError, setActionError] = useState<string | undefined>();
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   // El reseteo de contraseña es un permiso propio (/reset-pass), separado
@@ -42,6 +52,13 @@ export function UsuariosPage() {
 
   const isMutating = bloquear.isPending || desbloquear.isPending || eliminar.isPending;
 
+  const mutationStates: MutationStates = {
+    bloquear: bloquear.isPending,
+    desbloquear: desbloquear.isPending,
+    eliminar: eliminar.isPending,
+    resetear: resetear.isPending,
+  };
+
   const filtered = useMemo(() => {
     if (!usuarios) return [];
     const term = search.trim().toLowerCase();
@@ -56,22 +73,33 @@ export function UsuariosPage() {
 
   function handleConfirm() {
     if (!confirmAction) return;
+    setActionError(undefined);
     const { type, usuario } = confirmAction;
 
+    const onError = (err: unknown) => {
+      setActionError((err as ApiError).message ?? 'No se pudo completar la acción.');
+    };
+
     if (type === 'bloquear') {
-      bloquear.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null) });
+      bloquear.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null), onError });
     } else if (type === 'desbloquear') {
-      desbloquear.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null) });
+      desbloquear.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null), onError });
     } else if (type === 'eliminar') {
-      eliminar.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null) });
+      eliminar.mutate(usuario.idUsuario, { onSuccess: () => setConfirmAction(null), onError });
     } else if (type === 'resetear') {
       resetear.mutate(usuario.idUsuario, {
         onSuccess: (data) => {
           setConfirmAction(null);
           setGeneratedPassword(data.passGenerada);
         },
+        onError,
       });
     }
+  }
+
+  function handleCancel() {
+    setConfirmAction(null);
+    setActionError(undefined);
   }
 
   const confirmCopy: Record<ConfirmAction['type'], { title: string; description: string; confirmLabel: string; variant: 'default' | 'danger' }> = {
@@ -150,7 +178,12 @@ export function UsuariosPage() {
                 usuario={usuario}
                 canResetPassword={canResetPassword}
                 disabled={isMutating}
-                onAction={(type) => setConfirmAction({ type, usuario })}
+                confirmAction={confirmAction}
+                mutationStates={mutationStates}
+                onAction={(type) => {
+                  setActionError(undefined);
+                  setConfirmAction({ type, usuario });
+                }}
               />
             ))}
           </div>
@@ -185,7 +218,12 @@ export function UsuariosPage() {
                         usuario={usuario}
                         canResetPassword={canResetPassword}
                         disabled={isMutating}
-                        onAction={(type) => setConfirmAction({ type, usuario })}
+                        confirmAction={confirmAction}
+                        mutationStates={mutationStates}
+                        onAction={(type) => {
+                          setActionError(undefined);
+                          setConfirmAction({ type, usuario });
+                        }}
                       />
                     </td>
                   </tr>
@@ -203,8 +241,9 @@ export function UsuariosPage() {
         confirmLabel={confirmAction ? confirmCopy[confirmAction.type].confirmLabel : undefined}
         variant={confirmAction ? confirmCopy[confirmAction.type].variant : 'default'}
         isLoading={isMutating || resetear.isPending}
+        errorMessage={actionError}
         onConfirm={handleConfirm}
-        onCancel={() => setConfirmAction(null)}
+        onCancel={handleCancel}
       />
 
       <ResetPasswordDialog
@@ -220,11 +259,23 @@ interface ActionsProps {
   usuario: UsuarioListItem;
   canResetPassword: boolean;
   disabled: boolean;
+  confirmAction: ConfirmAction | null;
+  mutationStates: MutationStates;
   onAction: (type: ConfirmAction['type']) => void;
 }
 
-function RowActions({ usuario, canResetPassword, disabled, onAction }: ActionsProps) {
+function RowActions({
+  usuario,
+  canResetPassword,
+  disabled,
+  confirmAction,
+  mutationStates,
+  onAction,
+}: ActionsProps) {
   const isBlocked = usuario.estadoUsuario === 'B';
+
+  const esEsteUsuario = (type: ConfirmAction['type']) =>
+    confirmAction?.type === type && confirmAction.usuario.idUsuario === usuario.idUsuario;
 
   return (
     <div className="flex items-center justify-end gap-1">
@@ -239,6 +290,10 @@ function RowActions({ usuario, canResetPassword, disabled, onAction }: ActionsPr
       <IconActionButton
         label={isBlocked ? 'Desbloquear' : 'Bloquear'}
         icon={isBlocked ? Unlock : Lock}
+        isLoading={
+          (isBlocked ? mutationStates.desbloquear : mutationStates.bloquear) &&
+          esEsteUsuario(isBlocked ? 'desbloquear' : 'bloquear')
+        }
         disabled={disabled}
         onClick={() => onAction(isBlocked ? 'desbloquear' : 'bloquear')}
       />
@@ -246,6 +301,7 @@ function RowActions({ usuario, canResetPassword, disabled, onAction }: ActionsPr
         <IconActionButton
           label="Restablecer contraseña"
           icon={KeyRound}
+          isLoading={mutationStates.resetear && esEsteUsuario('resetear')}
           disabled={disabled}
           onClick={() => onAction('resetear')}
         />
@@ -254,6 +310,7 @@ function RowActions({ usuario, canResetPassword, disabled, onAction }: ActionsPr
         label="Eliminar"
         icon={Trash2}
         variant="danger"
+        isLoading={mutationStates.eliminar && esEsteUsuario('eliminar')}
         disabled={disabled}
         onClick={() => onAction('eliminar')}
       />
@@ -266,12 +323,14 @@ function IconActionButton({
   icon: Icon,
   onClick,
   disabled,
+  isLoading,
   variant = 'default',
 }: {
   label: string;
   icon: typeof Lock;
   onClick: () => void;
   disabled?: boolean;
+  isLoading?: boolean;
   variant?: 'default' | 'danger';
 }) {
   return (
@@ -286,7 +345,7 @@ function IconActionButton({
         variant === 'danger' && 'hover:bg-danger-500/10 hover:text-danger-600 dark:hover:text-danger-400',
       )}
     >
-      <Icon className="h-4 w-4" />
+      {isLoading ? <ButtonSpinner /> : <Icon className="h-4 w-4" />}
     </button>
   );
 }
@@ -295,6 +354,8 @@ function UsuarioCard({
   usuario,
   canResetPassword,
   disabled,
+  confirmAction,
+  mutationStates,
   onAction,
 }: ActionsProps) {
   return (
@@ -324,6 +385,8 @@ function UsuarioCard({
           usuario={usuario}
           canResetPassword={canResetPassword}
           disabled={disabled}
+          confirmAction={confirmAction}
+          mutationStates={mutationStates}
           onAction={onAction}
         />
       </div>
