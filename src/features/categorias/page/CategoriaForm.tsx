@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { LayoutGrid, FileText } from 'lucide-react';
 import { IconField } from '@/shared/ui/IconField';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 export interface CategoriaFormValues {
   nombreCategoria: string;
@@ -93,6 +94,7 @@ export function CategoriaForm({
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting && <ButtonSpinner />}
           {isSubmitting ? 'Guardando…' : submitLabel}
         </button>
       </div>

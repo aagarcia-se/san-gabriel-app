@@ -8,6 +8,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { cn } from '@/shared/lib/cn';
 import type { ActivarNotificaionRequest, GestionarNotificacionRequest } from '../types/notificaciones.types';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 const TIPO_EVENTO_DEFAULT = 'orden_especial';
 
@@ -202,7 +203,7 @@ export function NotificacionesPage() {
                                 disabled={isSaving}
                                 className="btn-primary"
                             >
-                                <Save className="h-4 w-4" />
+                                {isSaving ? <ButtonSpinner /> : <Save className="h-4 w-4" />}
                                 {isSaving ? 'Guardando…' : 'Guardar cambios'}
                             </button>
                         </div>

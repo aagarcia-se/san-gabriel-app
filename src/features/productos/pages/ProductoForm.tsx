@@ -5,6 +5,7 @@ import { cn } from '@/shared/lib/cn';
 import { computePrecioPorUnidad, type ControlType } from '../lib/productoHelpers';
 import type { TipoProduccion } from '../types/producto.types';
 import { useCategorias } from '@/features/categorias/api/useCategorias';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 export interface ProductoFormValues {
   nombreProducto: string;
@@ -314,6 +315,7 @@ export function ProductoForm({
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting && <ButtonSpinner />}
           {isSubmitting ? 'Guardando…' : submitLabel}
         </button>
       </div>

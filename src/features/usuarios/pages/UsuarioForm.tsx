@@ -3,6 +3,7 @@ import { User, Mail, Building2, Shield } from 'lucide-react';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
 import { useRoles } from '@/features/roles/api/useRoles';
 import { IconField } from '@/shared/ui/IconField';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 export interface UsuarioFormValues {
   nombreUsuario: string;
@@ -223,6 +224,7 @@ export function UsuarioForm({
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting && <ButtonSpinner />}
           {isSubmitting ? 'Guardando…' : submitLabel}
         </button>
       </div>

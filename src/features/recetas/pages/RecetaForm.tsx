@@ -4,6 +4,7 @@ import { useProductos } from '@/features/productos/api/useProductos';
 import { IconField } from '@/shared/ui/IconField';
 import { cn } from '@/shared/lib/cn';
 import type { ProductoConPrecio } from '@/features/productos/types/precio.types';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 export interface RecetaFormValues {
   idProducto: string;
@@ -164,6 +165,7 @@ export function RecetaForm({
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting && <ButtonSpinner />}
           {isSubmitting ? 'Guardando…' : submitLabel}
         </button>
       </div>

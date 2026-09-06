@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Building2, MapPin, Phone, Mail, Map } from 'lucide-react';
 import { IconField } from '@/shared/ui/IconField';
+import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
 
 export interface SucursalFormValues {
   nombreSucursal: string;
@@ -173,6 +174,7 @@ export function SucursalForm({
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
+          {isSubmitting && <ButtonSpinner />}
           {isSubmitting ? 'Guardando…' : submitLabel}
         </button>
       </div>
