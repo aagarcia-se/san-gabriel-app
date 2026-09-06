@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { Bell, Save } from 'lucide-react';
+import { Bell, Save, Search } from 'lucide-react';
 import { useUsuariosNotificaciones } from '@/features/categorias/api/useNotificaciones';
 import { useActivarNotificacion, useGestionarNotificaciones } from '@/features/categorias/api/useNotificacionMutations';
 import { Spinner } from '@/shared/ui/Spinner';
@@ -17,6 +17,8 @@ export function NotificacionesPage() {
     const activar = useActivarNotificacion();
     const gestionar = useGestionarNotificaciones();
     const isSaving = activar.isPending || gestionar.isPending;
+
+    const [search, setSearch] = useState('');
 
     // Cambios pendientes: idUsuario -> nuevo valor de activo.
     const [cambios, setCambios] = useState<Record<number, boolean>>({});
@@ -38,6 +40,14 @@ export function NotificacionesPage() {
             };
         });
     }, [notificaciones, cambios]);
+
+    const filtered = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) return filas;
+        return filas.filter((f) =>
+            `${f.nombreUsuario} ${f.apellidoUsuario} ${f.tipoEvento}`.toLowerCase().includes(term),
+        );
+    }, [filas, search]);
 
     const hayCambios = Object.keys(cambios).length > 0;
 
@@ -104,20 +114,35 @@ export function NotificacionesPage() {
                 <p className="text-sm text-muted">Quién recibe avisos de eventos, por usuario.</p>
             </div>
 
+            <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <input
+                    type="text"
+                    placeholder="Buscar por usuario o tipo de evento…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="input pl-9"
+                />
+            </div>
+
             {isLoading && <Spinner label="Cargando notificaciones…" />}
 
             {isError && <ErrorState message={error?.message} onRetry={() => refetch()} />}
 
-            {!isLoading && !isError && filas.length === 0 && (
+            {!isLoading && !isError && filtered.length === 0 && (
                 <EmptyState
-                    title="No hay usuarios"
-                    description="Todavía no hay usuarios para configurar notificaciones."
+                    title={search ? 'Sin resultados' : 'No hay usuarios'}
+                    description={
+                        search
+                            ? 'Prueba con otro término de búsqueda.'
+                            : 'Todavía no hay usuarios para configurar notificaciones.'
+                    }
                 />
             )}
 
-            {!isLoading && !isError && filas.length > 0 && (
+            {!isLoading && !isError && filtered.length > 0 && (
                 <div className="grid gap-3 md:grid-cols-2">
-                    {filas.map((fila) => (
+                    {filtered.map((fila) => (
                         <div key={fila.idUsuario} className="card flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div
