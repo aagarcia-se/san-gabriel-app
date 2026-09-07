@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Building2, MapPin, Phone, Mail, Map } from 'lucide-react';
 import { IconField } from '@/shared/ui/IconField';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 export interface SucursalFormValues {
   nombreSucursal: string;

@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-import { ButtonSpinner } from '../components/ButtonSpinner';
+import { ButtonSpinner } from './ButtonSpinner';
 
 interface ConfirmDialogProps {
   open: boolean;

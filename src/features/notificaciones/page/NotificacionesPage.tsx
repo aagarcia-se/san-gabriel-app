@@ -8,7 +8,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { cn } from '@/shared/lib/cn';
 import type { ActivarNotificaionRequest, GestionarNotificacionRequest } from '../types/notificaciones.types';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 const TIPO_EVENTO_DEFAULT = 'orden_especial';
 

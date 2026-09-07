@@ -4,7 +4,7 @@ import { useProductos } from '@/features/productos/api/useProductos';
 import { IconField } from '@/shared/ui/IconField';
 import { cn } from '@/shared/lib/cn';
 import type { ProductoConPrecio } from '@/features/productos/types/precio.types';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 export interface RecetaFormValues {
   idProducto: string;

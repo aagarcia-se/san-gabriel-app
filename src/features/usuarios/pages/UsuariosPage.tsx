@@ -18,7 +18,7 @@ import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { cn } from '@/shared/lib/cn';
 import type { UsuarioListItem } from '../types/usuario.types';
 import type { ApiError } from '@/shared/api/httpClient';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 type ConfirmAction = {
   type: 'bloquear' | 'desbloquear' | 'eliminar' | 'resetear';

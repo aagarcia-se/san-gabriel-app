@@ -3,7 +3,7 @@ import { Shield } from 'lucide-react';
 import { usePermisos } from '@/features/permisos/api/usePermisos';
 import { IconField } from '@/shared/ui/IconField';
 import { Spinner } from '@/shared/ui/Spinner';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 export interface RolFormValues {
   nombreRol: string;

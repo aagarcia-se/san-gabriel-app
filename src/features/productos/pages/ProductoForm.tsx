@@ -5,7 +5,7 @@ import { cn } from '@/shared/lib/cn';
 import { computePrecioPorUnidad, type ControlType } from '../lib/productoHelpers';
 import type { TipoProduccion } from '../types/producto.types';
 import { useCategorias } from '@/features/categorias/api/useCategorias';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 export interface ProductoFormValues {
   nombreProducto: string;

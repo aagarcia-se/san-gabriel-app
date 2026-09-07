@@ -3,7 +3,7 @@ import { User, Mail, Building2, Shield } from 'lucide-react';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
 import { useRoles } from '@/features/roles/api/useRoles';
 import { IconField } from '@/shared/ui/IconField';
-import { ButtonSpinner } from '@/shared/components/ButtonSpinner';
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
 
 export interface UsuarioFormValues {
   nombreUsuario: string;
