@@ -65,7 +65,7 @@ export function RecetasPage() {
   function handleConfirmEliminar() {
     if (!ingredienteAEliminar) return;
     setActionError(undefined);
-    eliminarReceta.mutate(ingredienteAEliminar.idReceta, {
+    eliminarReceta.mutate(ingredienteAEliminar.idProducto, {
       onSuccess: () => setIngredienteAEliminar(null),
       onError: (err: unknown) => {
         setActionError((err as ApiError).message ?? 'No se pudo eliminar la receta.');
