@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { cn } from '@/shared/lib/cn';
 
-type BadgeVariant = 'success' | 'danger' | 'neutral' | 'brand';
+type BadgeVariant = 'success' | 'danger' | 'neutral' | 'brand' | 'warning';
 
 interface BadgeProps extends PropsWithChildren {
   variant?: BadgeVariant;
@@ -13,6 +13,7 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   danger: 'bg-danger-500/10 text-danger-600 dark:text-danger-400',
   neutral: 'bg-surface-2 text-muted',
   brand: 'bg-brand-500/10 text-brand-600 dark:text-brand-400',
+  warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
 };
 
 export function Badge({ variant = 'neutral', className, children }: BadgeProps) {

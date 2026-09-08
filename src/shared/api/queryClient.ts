@@ -67,4 +67,13 @@ export const queryKeys = {
     list: () => [...queryKeys.encuestas.all, 'list'] as const,
     detail: (idCampania: number) => [...queryKeys.encuestas.all, 'detail', idCampania] as const,
   },
+  ordenesProduccion: {
+    all: ['ordenesProduccion'] as const,
+    list: (idRol: number, idSucursal: number) =>
+      [...queryKeys.ordenesProduccion.all, 'list', idRol, idSucursal] as const,
+    detalleOrden: (idOrdenProduccion: number) =>
+      [...queryKeys.ordenesProduccion.all, 'detalleOrden', idOrdenProduccion] as const,
+    consumoIngredientes: (idOrdenProduccion: number) =>
+      [...queryKeys.ordenesProduccion.all, 'consumoIngredientes', idOrdenProduccion] as const,
+  },
 };

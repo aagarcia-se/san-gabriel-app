@@ -36,6 +36,9 @@ import { EncuestasPage } from '@/features/encuestas/page/EncuestasPage';
 import { CrearEncuestaPage } from '@/features/encuestas/page/CrearEncuestaPage';
 import { EditarEncuestaPage } from '@/features/encuestas/page/EditarEncuestaPage';
 import { EncuestaDetallePage } from '@/features/encuestas/page/EncuestaDetallePage';
+import { OrdenesProduccionPage } from '@/features/ordenesproduccion/page/OrdenesProduccionPage';
+import { DetalleOrdenProduccionPage } from '@/features/ordenesproduccion/page/DetalleOrdenProduccionPage';
+import { CrearOrdenProduccionPage } from '@/features/ordenesproduccion/page/CrearOrdenProduccionPage';
 
 export function AppRoutes() {
   return (
@@ -272,6 +275,30 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/encuestas-config">
                       <EncuestaDetallePage  />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/ordenes-produccion"
+                  element={
+                    <RequirePermission ruta="/ordenes-produccion">
+                      <OrdenesProduccionPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/ordenes-produccion/nuevo"
+                  element={
+                    <RequirePermission ruta="/ordenes-produccion">
+                      <CrearOrdenProduccionPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/ordenes-produccion/:idOrdenProduccion"
+                  element={
+                    <RequirePermission ruta="/ordenes-produccion">
+                      <DetalleOrdenProduccionPage />
                     </RequirePermission>
                   }
                 />
