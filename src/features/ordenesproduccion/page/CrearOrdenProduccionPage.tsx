@@ -4,7 +4,6 @@ import { useIngresarOrdenProduccion } from '../api/useOrdenProduccionMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { OrdenProduccionForm, type OrdenProduccionFormValues } from './OrdenProduccionForm';
-import type { ApiError } from '@/shared/api/httpClient';
 import { getErrorMessage } from '@/shared/utils/erros.utils';
 
 export function CrearOrdenProduccionPage() {
