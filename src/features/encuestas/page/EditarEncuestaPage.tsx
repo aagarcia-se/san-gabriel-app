@@ -16,7 +16,7 @@ export function EditarEncuestaPage() {
   const navigate = useNavigate();
 
   const { data: campania, isLoading, isError, error, refetch } = useEncuestaDetalle(idCampania);
-  const { mutate, isPending, error: mutationError } = useModificarEncuesta();
+  const { mutate, isPending } = useModificarEncuesta();
 
   // Tras guardar sí queremos un destino fijo y predecible (el detalle
   // actualizado), a diferencia de "cancelar"/"regresar" que usa el

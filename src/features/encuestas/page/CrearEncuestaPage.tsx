@@ -4,7 +4,6 @@ import { useCrearEncuesta } from '../api/useEncuestaMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { EncuestaForm, type EncuestaFormValues } from './EncuestaForm';
-import type { ApiError } from '@/shared/api/httpClient';
 import { getErrorMessage } from '@/shared/utils/erros.utils';
 
 export function CrearEncuestaPage() {
