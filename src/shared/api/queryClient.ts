@@ -62,4 +62,9 @@ export const queryKeys = {
     all: ['fechaactiva'] as const,
     list: () => [...queryKeys.fechaactiva.all, 'list'] as const,
   },
+  encuestas: {
+    all: ['encuestas'] as const,
+    list: () => [...queryKeys.encuestas.all, 'list'] as const,
+    detail: (idCampania: number) => [...queryKeys.encuestas.all, 'detail', idCampania] as const,
+  },
 };

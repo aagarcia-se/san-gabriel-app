@@ -153,7 +153,7 @@ export const menuSchema: MenuEntry[] = [
       { type: 'link', to: '/perfil', label: 'Mi perfil', icon: UserCog },
       {
         type: 'link',
-        to: '/encuestas-config',
+        to: '/encuestas',
         label: 'Encuestas',
         icon: ClipboardCheck,
         rutaAcceso: '/encuestas-config',

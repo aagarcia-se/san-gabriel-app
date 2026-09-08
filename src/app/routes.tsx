@@ -32,6 +32,10 @@ import { CrearRecetaPage } from '@/features/recetas/pages/CrearRecetaPage';
 import { EditarRecetaPage } from '@/features/recetas/pages/EditarRecetaPage';
 import { NotificacionesPage } from '@/features/notificaciones/page/NotificacionesPage';
 import { ActivarFechaPage } from '@/features/activacionfecha/page/ActivarFechaPage';
+import { EncuestasPage } from '@/features/encuestas/page/EncuestasPage';
+import { CrearEncuestaPage } from '@/features/encuestas/page/CrearEncuestaPage';
+import { EditarEncuestaPage } from '@/features/encuestas/page/EditarEncuestaPage';
+import { EncuestaDetallePage } from '@/features/encuestas/page/EncuestaDetallePage';
 
 export function AppRoutes() {
   return (
@@ -236,6 +240,38 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/activar-fecha-produccion">
                       <ActivarFechaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/encuestas"
+                  element={
+                    <RequirePermission ruta="/encuestas-config">
+                      <EncuestasPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/encuestas/nuevo"
+                  element={
+                    <RequirePermission ruta="/encuestas-config">
+                      <CrearEncuestaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/encuestas/:idCampania/editar"
+                  element={
+                    <RequirePermission ruta="/encuestas-config">
+                      <EditarEncuestaPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/encuestas/:idCampania"
+                  element={
+                    <RequirePermission ruta="/encuestas-config">
+                      <EncuestaDetallePage  />
                     </RequirePermission>
                   }
                 />
