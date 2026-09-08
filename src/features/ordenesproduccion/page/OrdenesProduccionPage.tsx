@@ -107,8 +107,8 @@ export function OrdenesProduccionPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-surface-2 text-xs uppercase tracking-wide text-muted">
                 <tr>
+                <th className="px-4 py-3 font-medium">No. Orden</th>
                   <th className="px-4 py-3 font-medium">Sucursal</th>
-                  <th className="px-4 py-3 font-medium">Panadero</th>
                   <th className="px-4 py-3 font-medium">Turno</th>
                   <th className="px-4 py-3 font-medium">Fecha a producir</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
@@ -118,8 +118,8 @@ export function OrdenesProduccionPage() {
               <tbody className="divide-y divide-line bg-surface">
                 {filtered.map((orden) => (
                   <tr key={orden.idOrdenProduccion} className="transition-colors hover:bg-surface-2">
+                    <td className="px-4 py-3 text-muted">{orden.idOrdenProduccion}</td>
                     <td className="px-4 py-3 font-medium text-ink">{orden.nombreSucursal}</td>
-                    <td className="px-4 py-3 text-muted">{orden.nombrePanadero}</td>
                     <td className="px-4 py-3 text-muted">{orden.ordenTurno}</td>
                     <td className="px-4 py-3 text-muted">{orden.fechaAProducir}</td>
                     <td className="px-4 py-3">
