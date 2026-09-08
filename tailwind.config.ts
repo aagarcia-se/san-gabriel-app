@@ -38,6 +38,23 @@ export default {
           900: '#7f1d1d',
           950: '#450a0a',
         },
+        // Mismo motivo que danger: brand ya no sirve como "todo bien"
+        // porque es rojizo, así que success necesita su propio token
+        // para que un mensaje de éxito no se confunda visualmente con
+        // la marca o con un error.
+        success: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
+        },
         // Tokens semánticos: mismo nombre de clase en toda la app,
         // el VALOR cambia solo con la clase "dark" en <html> (ver
         // globals.css y src/shared/theme/useTheme.ts). Así cada

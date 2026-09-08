@@ -8,6 +8,7 @@ interface AuthState {
   permisos: Permiso[];
   isAuthenticated: boolean;
   setSession: (token: string, user: AuthUser, permisos?: Permiso[]) => void;
+  updateUser: (changes: Partial<AuthUser>) => void;
   logout: () => void;
 }
 
@@ -22,6 +23,11 @@ export const useAuthStore = create<AuthState>()(
         // El interceptor de axios lee el token desde esta misma key.
         localStorage.setItem('auth_token', token);
         set({ token, user, permisos, isAuthenticated: true });
+      },
+      // Actualiza solo los campos que cambian del usuario en sesión (por
+      // ejemplo tras editar el perfil), sin tocar token/permisos.
+      updateUser: (changes) => {
+        set((state) => (state.user ? { user: { ...state.user, ...changes } } : state));
       },
       logout: () => {
         localStorage.removeItem('auth_token');
