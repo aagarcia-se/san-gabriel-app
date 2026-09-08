@@ -31,6 +31,7 @@ import { RecetasPage } from '@/features/recetas/pages/RecetasPage';
 import { CrearRecetaPage } from '@/features/recetas/pages/CrearRecetaPage';
 import { EditarRecetaPage } from '@/features/recetas/pages/EditarRecetaPage';
 import { NotificacionesPage } from '@/features/notificaciones/page/NotificacionesPage';
+import { ActivarFechaPage } from '@/features/activacionfecha/page/ActivarFechaPage';
 
 export function AppRoutes() {
   return (
@@ -227,6 +228,14 @@ export function AppRoutes() {
                   element={
                     <RequirePermission ruta="/habilitar-notificaciones">
                       <NotificacionesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/activar-fecha-produccion"
+                  element={
+                    <RequirePermission ruta="/activar-fecha-produccion">
+                      <ActivarFechaPage />
                     </RequirePermission>
                   }
                 />

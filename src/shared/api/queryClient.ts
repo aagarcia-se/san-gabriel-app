@@ -57,6 +57,9 @@ export const queryKeys = {
   notificaciones: {
     all: ['notificaciones'] as const,
     list: () => [...queryKeys.notificaciones.all, 'list'] as const
-  }
-
+  },
+  fechaactiva: {
+    all: ['fechaactiva'] as const,
+    list: () => [...queryKeys.fechaactiva.all, 'list'] as const,
+  },
 };
