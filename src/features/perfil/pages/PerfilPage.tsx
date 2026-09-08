@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Check, Eye, EyeOff, KeyRound, Mail, Pencil, User, X } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useActualizarPassword, useActualizarPerfil } from '../api/usePerfilMutations';
 import { IconField } from '@/shared/ui/IconField';
 import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
+import { Alert } from '@/shared/ui/Alert';
 import { cn } from '@/shared/lib/cn';
 import type { ApiError } from '@/shared/api/httpClient';
 
@@ -18,42 +19,11 @@ const PASSWORD_REQUISITOS = [
   { label: 'Al menos 8 caracteres', test: (pass: string) => pass.length >= 8 },
   { label: 'Una letra mayúscula', test: (pass: string) => /[A-Z]/.test(pass) },
   { label: 'Un número', test: (pass: string) => /[0-9]/.test(pass) },
-  { label: 'Un carácter especial (* / -)', test: (pass: string) => /[^A-Za-z0-9]/.test(pass) },
+  { label: 'Un carácter especial (/*-$%#$")', test: (pass: string) => /[^A-Za-z0-9]/.test(pass) },
 ];
 
 function passwordCumpleTodo(pass: string) {
   return PASSWORD_REQUISITOS.every((req) => req.test(pass));
-}
-
-// Alerta de éxito que se puede cerrar a mano y que además se oculta
-// sola después de unos segundos.
-function SuccessAlert({
-  message,
-  onDismiss,
-  autoDismissMs = 5000,
-}: {
-  message: string;
-  onDismiss: () => void;
-  autoDismissMs?: number;
-}) {
-  useEffect(() => {
-    const timeout = setTimeout(onDismiss, autoDismissMs);
-    return () => clearTimeout(timeout);
-  }, [onDismiss, autoDismissMs]);
-
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-lg bg-green-500/10 px-3 py-2 text-sm text-green-600 dark:text-green-400">
-      <span>{message}</span>
-      <button
-        type="button"
-        onClick={onDismiss}
-        aria-label="Cerrar"
-        className="shrink-0 rounded-md p-0.5 transition-colors hover:bg-green-500/20"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
 }
 
 export function PerfilPage() {
@@ -119,7 +89,7 @@ export function PerfilPage() {
           setIsEditing(false);
           setPerfilSuccess(true);
         },
-        onError: (err : unknown) => {
+        onError: (err:unknown) => {
           setPerfilError((err as ApiError).message ?? 'No se pudo actualizar el perfil.');
         },
       },
@@ -150,7 +120,7 @@ export function PerfilPage() {
           setPassTouched(false);
           setPassSuccess(true);
         },
-        onError: (err : unknown) => {
+        onError: (err:unknown) => {
           setPassError((err as ApiError).message ?? 'No se pudo actualizar la contraseña.');
         },
       },
@@ -279,12 +249,9 @@ export function PerfilPage() {
             </div>
 
             {perfilError && (
-              <p
-                role="alert"
-                className="rounded-lg bg-danger-500/10 px-3 py-2 text-sm text-danger-600 dark:text-danger-400"
-              >
+              <Alert variant="danger" onDismiss={() => setPerfilError(undefined)}>
                 {perfilError}
-              </p>
+              </Alert>
             )}
 
             <div className="flex justify-end gap-2 pt-1">
@@ -306,10 +273,13 @@ export function PerfilPage() {
         )}
 
         {perfilSuccess && !isEditing && (
-          <SuccessAlert
-            message="Perfil actualizado correctamente."
+          <Alert
+            variant="success"
             onDismiss={() => setPerfilSuccess(false)}
-          />
+            autoDismissMs={5000}
+          >
+            Perfil actualizado correctamente.
+          </Alert>
         )}
       </div>
 
@@ -355,7 +325,7 @@ export function PerfilPage() {
                       key={req.label}
                       className={cn(
                         'flex items-center gap-1.5 text-xs transition-colors',
-                        cumple ? 'text-green-600 dark:text-green-400' : 'text-muted',
+                        cumple ? 'text-success-600 dark:text-success-400' : 'text-muted',
                       )}
                     >
                       {cumple ? (
@@ -394,7 +364,7 @@ export function PerfilPage() {
                 className={cn(
                   'flex items-center gap-1.5 pt-1 text-xs transition-colors',
                   confirmanCoinciden
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-success-600 dark:text-success-400'
                     : 'text-danger-600 dark:text-danger-400',
                 )}
               >
@@ -408,20 +378,20 @@ export function PerfilPage() {
             )}
           </div>
 
-          {passError && (
-            <p
-              role="alert"
-              className="rounded-lg bg-danger-500/10 px-3 py-2 text-sm text-danger-600 dark:text-danger-400"
-            >
+          {perfilError && (
+            <Alert variant="danger" onDismiss={() => setPerfilError(undefined)}>
               {passError}
-            </p>
+            </Alert>
           )}
 
           {passSuccess && (
-            <SuccessAlert
-              message="Contraseña actualizada correctamente."
+            <Alert
+              variant="success"
               onDismiss={() => setPassSuccess(false)}
-            />
+              autoDismissMs={5000}
+            >
+              Contraseña actualizada correctamente.
+            </Alert>
           )}
 
           <div className="flex justify-end pt-1">
