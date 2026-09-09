@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, Eye, Plus, Search, Trash2 } from 'lucide-react';
+import { ClipboardList, Eye, FileText, Plus, Search, Trash2 } from 'lucide-react';
 import { useOrdenesProduccion } from '../api/useOrdenesProduccion';
 import { useEliminarOrdenProduccion } from '../api/useOrdenProduccionMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -9,6 +9,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { Badge } from '@/shared/ui/Badge';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
+import { OrdenPdfLoader } from './OrdenPdfLoader';
 import type { ApiError } from '@/shared/api/httpClient';
 import type { OrdenProduccionListItem } from '../types/ordenesProduccion.types';
 
@@ -25,6 +26,7 @@ export function OrdenesProduccionPage() {
   const [search, setSearch] = useState('');
   const [ordenAEliminar, setOrdenAEliminar] = useState<OrdenProduccionListItem | null>(null);
   const [actionError, setActionError] = useState<string | undefined>();
+  const [pdfOrdenId, setPdfOrdenId] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     if (!ordenes) return [];
@@ -40,7 +42,7 @@ export function OrdenesProduccionPage() {
     setActionError(undefined);
     eliminar.mutate(ordenAEliminar.idOrdenProduccion, {
       onSuccess: () => setOrdenAEliminar(null),
-      onError: (err : unknown) => {
+      onError: (err: unknown) => {
         setActionError((err as ApiError).message ?? 'No se pudo eliminar la orden.');
       },
     });
@@ -98,6 +100,7 @@ export function OrdenesProduccionPage() {
                   setActionError(undefined);
                   setOrdenAEliminar(orden);
                 }}
+                onVerPdf={() => setPdfOrdenId(orden.idOrdenProduccion)}
               />
             ))}
           </div>
@@ -107,7 +110,7 @@ export function OrdenesProduccionPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-surface-2 text-xs uppercase tracking-wide text-muted">
                 <tr>
-                <th className="px-4 py-3 font-medium">No. Orden</th>
+                  <th className="px-4 py-3 font-medium">No. Orden</th>
                   <th className="px-4 py-3 font-medium">Sucursal</th>
                   <th className="px-4 py-3 font-medium">Turno</th>
                   <th className="px-4 py-3 font-medium">Fecha a producir</th>
@@ -133,6 +136,7 @@ export function OrdenesProduccionPage() {
                           setActionError(undefined);
                           setOrdenAEliminar(orden);
                         }}
+                        onVerPdf={() => setPdfOrdenId(orden.idOrdenProduccion)}
                       />
                     </td>
                   </tr>
@@ -161,6 +165,10 @@ export function OrdenesProduccionPage() {
           setActionError(undefined);
         }}
       />
+
+      {pdfOrdenId !== null && (
+        <OrdenPdfLoader idOrdenProduccion={pdfOrdenId} onClose={() => setPdfOrdenId(null)} />
+      )}
     </div>
   );
 }
@@ -177,9 +185,10 @@ interface RowActionsProps {
   orden: OrdenProduccionListItem;
   disabled: boolean;
   onEliminar: () => void;
+  onVerPdf: () => void;
 }
 
-function RowActions({ orden, disabled, onEliminar }: RowActionsProps) {
+function RowActions({ orden, disabled, onEliminar, onVerPdf }: RowActionsProps) {
   return (
     <div className="flex items-center justify-end gap-1">
       <Link
@@ -190,6 +199,15 @@ function RowActions({ orden, disabled, onEliminar }: RowActionsProps) {
       >
         <Eye className="h-4 w-4" />
       </Link>
+      <button
+        type="button"
+        aria-label="Ver PDF"
+        title="Ver PDF"
+        onClick={onVerPdf}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+      >
+        <FileText className="h-4 w-4" />
+      </button>
       <button
         type="button"
         aria-label="Eliminar"
@@ -208,10 +226,12 @@ function OrdenCard({
   orden,
   disabled,
   onEliminar,
+  onVerPdf,
 }: {
   orden: OrdenProduccionListItem;
   disabled: boolean;
   onEliminar: () => void;
+  onVerPdf: () => void;
 }) {
   return (
     <div className="card">
@@ -237,7 +257,7 @@ function OrdenCard({
       </Link>
 
       <div className="mt-3 flex items-center justify-end gap-1 border-t border-line pt-3">
-        <RowActions orden={orden} disabled={disabled} onEliminar={onEliminar} />
+        <RowActions orden={orden} disabled={disabled} onEliminar={onEliminar} onVerPdf={onVerPdf} />
       </div>
     </div>
   );

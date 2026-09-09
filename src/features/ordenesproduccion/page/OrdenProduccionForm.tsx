@@ -1,6 +1,6 @@
 import { useRef, useState, type DragEvent, type FormEvent, type MouseEvent } from 'react';
 import dayjs from 'dayjs';
-import { Building2, CalendarDays, Upload, User, X } from 'lucide-react';
+import { CheckCircle2, Building2, CalendarDays, Upload, User, X } from 'lucide-react';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
 import { IconField } from '@/shared/ui/IconField';
 import type { TurnoProduccion } from '../types/ordenesProduccion.types';
@@ -256,11 +256,15 @@ export function OrdenProduccionForm({
             isDraggingOver
               ? 'flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-brand-500 bg-brand-500/10 px-4 py-6 text-center text-sm text-brand-600 transition-colors dark:text-brand-400'
               : values.archivo
-                ? 'flex cursor-pointer items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm text-ink transition-colors hover:bg-surface-2/70'
+                ? 'flex cursor-pointer items-center gap-3 rounded-xl border border-success-500/40 bg-success-500/10 px-4 py-3 text-sm text-success-700 transition-colors hover:bg-success-500/15 dark:text-success-400'
                 : 'flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted transition-colors hover:bg-surface-2'
           }
         >
-          <Upload className={isDraggingOver ? 'h-5 w-5 shrink-0' : 'h-4 w-4 shrink-0'} />
+          {values.archivo ? (
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          ) : (
+            <Upload className={isDraggingOver ? 'h-5 w-5 shrink-0' : 'h-4 w-4 shrink-0'} />
+          )}
           {values.archivo ? (
             <>
               <span className="min-w-0 flex-1 truncate text-left">{values.archivo.name}</span>

@@ -1,42 +1,18 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Boxes, Croissant, Package, Wheat } from 'lucide-react';
+import { Boxes, Croissant, Download, Package, Wheat } from 'lucide-react';
 import { useDetalleOrdenProduccion } from '../api/useDetalleOrdenProduccion';
 import { useConsumoIngredientes } from '../api/useConsumoIngredientes';
+import { buildOrdenProduccionViewModel } from '../lib/ordenProduccionViewModel';
+import { OrdenProduccionPdfDocument } from '../pdf/OrdenProduccionPdfDocument';
+import { downloadPdf } from '@/shared/pdf/downloadPdf';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { Spinner } from '@/shared/ui/Spinner';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { Badge } from '@/shared/ui/Badge';
-import type {
-  DetalleOrdenProducto,
-  EstadoOrdenProduccion,
-  IngredienteConsumido,
-} from '../types/ordenesProduccion.types';
-
-interface ProductoConsumo {
-  producto: string;
-  ingredientes: IngredienteConsumido[];
-}
-
-function agruparConsumoPorProducto(lineas: IngredienteConsumido[]): ProductoConsumo[] {
-  const mapa = new Map<string, ProductoConsumo>();
-  for (const linea of lineas) {
-    const existente = mapa.get(linea.Producto);
-    if (existente) {
-      existente.ingredientes.push(linea);
-    } else {
-      mapa.set(linea.Producto, { producto: linea.Producto, ingredientes: [linea] });
-    }
-  }
-  return Array.from(mapa.values()).sort((a, b) => a.producto.localeCompare(b.producto));
-}
-
-// Ajusta esta comparación si el nombre del ingrediente de harina en tu catálogo
-// no es exactamente "Harina" (p. ej. "Harina blanca").
-function esIngredienteHarina(nombreIngrediente: string): boolean {
-  return nombreIngrediente.trim().toLowerCase() === 'harina';
-}
+import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
+import type { DetalleOrdenProducto, EstadoOrdenProduccion } from '../types/ordenesProduccion.types';
 
 function EstadoBadge({ estado }: { estado: EstadoOrdenProduccion }) {
   return estado === 'P' ? (
@@ -49,12 +25,12 @@ function EstadoBadge({ estado }: { estado: EstadoOrdenProduccion }) {
 function ResumenHarina({
   sumaBandejas,
   sumaHarina,
+  total,
 }: {
   sumaBandejas: number;
   sumaHarina: number;
+  total: number;
 }) {
-  const total = sumaBandejas + sumaHarina;
-
   return (
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -223,61 +199,51 @@ export function DetalleOrdenProduccionPage() {
     refetch: refetchConsumo,
   } = useConsumoIngredientes(idOrdenProduccion);
 
-  const productosConsumo = useMemo(() => {
-    if (!consumo) return [];
-    // La harina se muestra aparte, resumida en ResumenHarina — no repetida
-    // dentro del desglose de ingredientes de cada producto.
-    const sinHarina = consumo.filter((linea) => !esIngredienteHarina(linea.Ingrediente));
-    return agruparConsumoPorProducto(sinHarina);
-  }, [consumo]);
-
-  const resumenHarina = useMemo(() => {
-    if (!detalle) return null;
-    // Bandejas: la harina consumida está en el payload de consumo de ingredientes
-    // (esa consulta solo trae productos por bandeja).
-    const sumaBandejas = (consumo ?? [])
-      .filter((linea) => esIngredienteHarina(linea.Ingrediente))
-      .reduce((acc, linea) => acc + linea.CantidadUsada, 0);
-    // Harina: esos productos no aparecen en el consumo de ingredientes —
-    // la cantidad solicitada ya viene directo en cantidadHarina del detalle de la orden.
-    const sumaHarina = detalle.detalleOrden
-      .filter((p) => p.tipoProduccion === 'harina')
-      .reduce((acc, p) => acc + p.cantidadHarina, 0);
-    return { sumaBandejas, sumaHarina };
-  }, [consumo, detalle]);
-
-  // Harina consumida por cada producto de bandeja individual, para mostrarla
-  // en su propia fila/tarjeta (viene del mismo payload de consumo de ingredientes).
-  const harinaPorProductoBandeja = useMemo(() => {
-    const mapa = new Map<string, number>();
-    for (const linea of consumo ?? []) {
-      if (!esIngredienteHarina(linea.Ingrediente)) continue;
-      mapa.set(linea.Producto, (mapa.get(linea.Producto) ?? 0) + linea.CantidadUsada);
-    }
-    return mapa;
-  }, [consumo]);
-
-  const { productosBandejas, productosHarina } = useMemo(() => {
-    if (!detalle) return { productosBandejas: [], productosHarina: [] };
-    return {
-      productosBandejas: detalle.detalleOrden.filter((p) => p.tipoProduccion === 'bandejas'),
-      productosHarina: detalle.detalleOrden.filter((p) => p.tipoProduccion === 'harina'),
-    };
-  }, [detalle]);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const isLoading = isLoadingDetalle || isLoadingConsumo;
 
+  const vm = detalle ? buildOrdenProduccionViewModel(detalle, consumo ?? []) : null;
+
+  async function handleDescargarPdf() {
+    if (!detalle) return;
+    setIsDownloading(true);
+    try {
+      await downloadPdf(
+        <OrdenProduccionPdfDocument detalle={detalle} ingredientes={consumo ?? []} />,
+        `orden-produccion-${idOrdenProduccion}.pdf`,
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <PageHeader
-        title={`Orden #${idParam}`}
-        description={
-          detalle
-            ? `${detalle.encabezadoOrden.nombreSucursal} · Turno ${detalle.encabezadoOrden.ordenTurno}`
-            : undefined
-        }
-        backTo="/ordenes-produccion"
-      />
+      <div className="flex items-start justify-between gap-3">
+        <PageHeader
+          title={`Orden #${idParam}`}
+          description={
+            detalle
+              ? `${detalle.encabezadoOrden.nombreSucursal} · Turno ${detalle.encabezadoOrden.ordenTurno}`
+              : undefined
+          }
+          backTo="/ordenes-produccion"
+        />
+        {detalle && (
+          <button
+            type="button"
+            onClick={handleDescargarPdf}
+            disabled={isDownloading}
+            className="btn-secondary shrink-0 !px-3 sm:!px-4"
+          >
+            {isDownloading ? <ButtonSpinner /> : <Download className="h-4 w-4" />}
+            <span className="hidden sm:inline">
+              {isDownloading ? 'Generando…' : 'Descargar PDF'}
+            </span>
+          </button>
+        )}
+      </div>
 
       {isLoading && <Spinner label="Cargando orden…" />}
 
@@ -292,7 +258,7 @@ export function DetalleOrdenProduccionPage() {
         />
       )}
 
-      {detalle && (
+      {detalle && vm && (
         <>
           {/* Encabezado de la orden */}
           <div className="card space-y-3">
@@ -334,10 +300,14 @@ export function DetalleOrdenProduccionPage() {
             <SeccionProductosPorTipo
               titulo="Por bandejas"
               tipo="bandejas"
-              productos={productosBandejas}
-              harinaPorProducto={harinaPorProductoBandeja}
+              productos={vm.productosBandejas}
+              harinaPorProducto={vm.harinaPorProductoBandeja}
             />
-            <SeccionProductosPorTipo titulo="Por harina" tipo="harina" productos={productosHarina} />
+            <SeccionProductosPorTipo
+              titulo="Por harina"
+              tipo="harina"
+              productos={vm.productosHarina}
+            />
           </div>
 
           {/* Consumo de ingredientes */}
@@ -348,60 +318,55 @@ export function DetalleOrdenProduccionPage() {
               <ErrorState message={errorConsumo?.message} onRetry={() => refetchConsumo()} />
             )}
 
-            {!isLoadingConsumo && !isErrorConsumo && (() => {
-              const hayHarina =
-                !!resumenHarina && (resumenHarina.sumaBandejas > 0 || resumenHarina.sumaHarina > 0);
-              const hayOtrosIngredientes = productosConsumo.length > 0;
-
-              if (!hayHarina && !hayOtrosIngredientes) {
-                return (
+            {!isLoadingConsumo && !isErrorConsumo && (
+              <>
+                {!vm.hayResumenHarina && !vm.hayOtrosIngredientes && (
                   <EmptyState
                     title="Sin consumo registrado"
                     description="Esta orden todavía no tiene ingredientes consumidos registrados."
                   />
-                );
-              }
+                )}
 
-              return (
-                <>
-                  {hayHarina && resumenHarina && (
-                    <ResumenHarina
-                      sumaBandejas={resumenHarina.sumaBandejas}
-                      sumaHarina={resumenHarina.sumaHarina}
-                    />
-                  )}
+                {vm.hayResumenHarina && (
+                  <ResumenHarina
+                    sumaBandejas={vm.sumaBandejas}
+                    sumaHarina={vm.sumaHarina}
+                    total={vm.totalHarina}
+                  />
+                )}
 
-                  {hayOtrosIngredientes && (
-                    <div className="grid items-start gap-3 md:grid-cols-2">
-                      {productosConsumo.map((producto) => (
-                        <div key={producto.producto} className="card space-y-3">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
-                              <Package className="h-5 w-5" />
-                            </div>
-                            <p className="truncate text-sm font-medium text-ink">{producto.producto}</p>
+                {vm.hayOtrosIngredientes && (
+                  <div className="grid items-start gap-3 md:grid-cols-2">
+                    {vm.productosConsumo.map((producto) => (
+                      <div key={producto.producto} className="card space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                            <Package className="h-5 w-5" />
                           </div>
-
-                          <div className="divide-y divide-line border-t border-line">
-                            {producto.ingredientes.map((ingrediente) => (
-                              <div
-                                key={`${ingrediente.Producto}-${ingrediente.Ingrediente}`}
-                                className="flex items-center justify-between gap-3 py-2 first:pt-3"
-                              >
-                                <p className="text-sm text-ink">{ingrediente.Ingrediente}</p>
-                                <p className="text-sm text-muted">
-                                  {ingrediente.CantidadUsada} {ingrediente.UnidadMedida}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
+                          <p className="truncate text-sm font-medium text-ink">
+                            {producto.producto}
+                          </p>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              );
-            })()}
+
+                        <div className="divide-y divide-line border-t border-line">
+                          {producto.ingredientes.map((ingrediente) => (
+                            <div
+                              key={`${ingrediente.Producto}-${ingrediente.Ingrediente}`}
+                              className="flex items-center justify-between gap-3 py-2 first:pt-3"
+                            >
+                              <p className="text-sm text-ink">{ingrediente.Ingrediente}</p>
+                              <p className="text-sm text-muted">
+                                {ingrediente.CantidadUsada} {ingrediente.UnidadMedida}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </>
       )}
