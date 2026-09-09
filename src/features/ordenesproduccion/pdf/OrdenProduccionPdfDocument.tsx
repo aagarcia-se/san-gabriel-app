@@ -1,4 +1,4 @@
-import { Document, Page, Text, View } from '@react-pdf/renderer';
+import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { pdfStyles } from '@/shared/pdf/pdfStyles';
 import { buildOrdenProduccionViewModel } from '../lib/ordenProduccionViewModel';
 import type { IngredienteConsumido, OrdenProduccionDetalle } from '../types/ordenesProduccion.types';
@@ -8,6 +8,71 @@ interface OrdenProduccionPdfDocumentProps {
   ingredientes: IngredienteConsumido[];
 }
 
+// Estilos locales solo para las secciones de productos (tags de sección,
+// columna de numeración y la barra de total). El resto del documento
+// (encabezado, franja de marca, badge de estado, grid de info) se queda
+// exactamente como está en pdfStyles — no se toca ese diseño.
+// El acento de color usa el rosa/rojo de marca de la app (brand-600 #E11D48
+// sobre fondo brand-50 #FFF1F2) para que el toque de color combine con el
+// resto del sistema en vez de introducir un color nuevo.
+const localStyles = StyleSheet.create({
+  sectionTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#020617',
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  numCol: {
+    width: '8%',
+  },
+  productoColBandejas: {
+    width: '42%',
+  },
+  cantidadColBandejas: {
+    width: '25%',
+  },
+  productoColHarina: {
+    width: '62%',
+  },
+  cantidadColHarina: {
+    width: '30%',
+  },
+  totalBox: {
+    marginTop: 14,
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  totalLabel: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#374151',
+  },
+  totalValue: {
+    fontSize: 13,
+    fontFamily: 'Helvetica-Bold',
+    color: '#E11D48',
+  },
+});
+
+interface FilaHarina {
+  key: string;
+  nombreProducto: string;
+  harina: number;
+}
+
 export function OrdenProduccionPdfDocument({
   detalle,
   ingredientes,
@@ -15,6 +80,21 @@ export function OrdenProduccionPdfDocument({
   const { encabezadoOrden } = detalle;
   const esPendiente = encabezadoOrden.estadoOrden === 'P';
   const vm = buildOrdenProduccionViewModel(detalle, ingredientes);
+
+  // Tabla de harina unificada: la harina de TODOS los productos de bandeja
+  // se colapsa en una sola fila (nombre fijo "Frances") con la suma total,
+  // en vez de enumerar cada producto de bandeja por separado. Los productos
+  // solicitados directamente por harina sí se enumeran uno por uno.
+  const filasHarina: FilaHarina[] = [
+    ...(vm.sumaBandejas > 0
+      ? [{ key: 'bandejas-total', nombreProducto: 'Frances', harina: vm.sumaBandejas }]
+      : []),
+    ...vm.productosHarina.map((p) => ({
+      key: `harina-${p.idDetalleOrdenProduccion}`,
+      nombreProducto: p.nombreProducto,
+      harina: p.cantidadHarina,
+    })),
+  ];
 
   return (
     <Document title={`Orden de producción #${encabezadoOrden.idOrdenProduccion}`}>
@@ -74,27 +154,37 @@ export function OrdenProduccionPdfDocument({
 
         {vm.productosBandejas.length > 0 && (
           <>
-            <Text style={pdfStyles.sectionTitle}>Productos por bandejas</Text>
+            <Text style={localStyles.sectionTag}>Bandejas</Text>
             <View style={pdfStyles.table}>
               <View style={pdfStyles.tableHeaderRow}>
-                <Text style={[pdfStyles.th, pdfStyles.w35]}>Producto</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w25]}>Categoría</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w15, pdfStyles.textRight]}>Bandejas</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w15, pdfStyles.textRight]}>Unidades</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w15, pdfStyles.textRight]}>Harina (Lb)</Text>
+                <Text style={[pdfStyles.th, localStyles.numCol]}>#</Text>
+                <Text style={[pdfStyles.th, localStyles.productoColBandejas]}>Producto</Text>
+                <Text
+                  style={[pdfStyles.th, localStyles.cantidadColBandejas, pdfStyles.textRight]}
+                >
+                  Bandejas
+                </Text>
+                <Text
+                  style={[pdfStyles.th, localStyles.cantidadColBandejas, pdfStyles.textRight]}
+                >
+                  Unidades / Filas
+                </Text>
               </View>
-              {vm.productosBandejas.map((producto) => (
+              {vm.productosBandejas.map((producto, index) => (
                 <View key={producto.idDetalleOrdenProduccion} style={pdfStyles.tableRow}>
-                  <Text style={[pdfStyles.td, pdfStyles.w35]}>{producto.nombreProducto}</Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w25]}>{producto.nombreCategoria}</Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w15, pdfStyles.textRight]}>
+                  <Text style={[pdfStyles.td, localStyles.numCol]}>{index + 1}</Text>
+                  <Text style={[pdfStyles.td, localStyles.productoColBandejas]}>
+                    {producto.nombreProducto}
+                  </Text>
+                  <Text
+                    style={[pdfStyles.td, localStyles.cantidadColBandejas, pdfStyles.textRight]}
+                  >
                     {producto.cantidadBandejas}
                   </Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w15, pdfStyles.textRight]}>
+                  <Text
+                    style={[pdfStyles.td, localStyles.cantidadColBandejas, pdfStyles.textRight]}
+                  >
                     {producto.cantidadUnidades}
-                  </Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w15, pdfStyles.textRight]}>
-                    {vm.harinaPorProductoBandeja.get(producto.nombreProducto) ?? '—'}
                   </Text>
                 </View>
               ))}
@@ -102,21 +192,25 @@ export function OrdenProduccionPdfDocument({
           </>
         )}
 
-        {vm.productosHarina.length > 0 && (
+        {filasHarina.length > 0 && (
           <>
-            <Text style={pdfStyles.sectionTitle}>Productos por harina</Text>
+            <Text style={localStyles.sectionTag}>Harina</Text>
             <View style={pdfStyles.table}>
               <View style={pdfStyles.tableHeaderRow}>
-                <Text style={[pdfStyles.th, pdfStyles.w40]}>Producto</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w40]}>Categoría</Text>
-                <Text style={[pdfStyles.th, pdfStyles.w20, pdfStyles.textRight]}>Harina (Lb)</Text>
+                <Text style={[pdfStyles.th, localStyles.numCol]}>#</Text>
+                <Text style={[pdfStyles.th, localStyles.productoColHarina]}>Producto</Text>
+                <Text style={[pdfStyles.th, localStyles.cantidadColHarina, pdfStyles.textRight]}>
+                  Harina
+                </Text>
               </View>
-              {vm.productosHarina.map((producto) => (
-                <View key={producto.idDetalleOrdenProduccion} style={pdfStyles.tableRow}>
-                  <Text style={[pdfStyles.td, pdfStyles.w40]}>{producto.nombreProducto}</Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w40]}>{producto.nombreCategoria}</Text>
-                  <Text style={[pdfStyles.td, pdfStyles.w20, pdfStyles.textRight]}>
-                    {producto.cantidadHarina}
+              {filasHarina.map((fila, index) => (
+                <View key={fila.key} style={pdfStyles.tableRow}>
+                  <Text style={[pdfStyles.td, localStyles.numCol]}>{index + 1}</Text>
+                  <Text style={[pdfStyles.td, localStyles.productoColHarina]}>
+                    {fila.nombreProducto}
+                  </Text>
+                  <Text style={[pdfStyles.td, localStyles.cantidadColHarina, pdfStyles.textRight]}>
+                    {fila.harina} Lb
                   </Text>
                 </View>
               ))}
@@ -125,41 +219,10 @@ export function OrdenProduccionPdfDocument({
         )}
 
         {vm.hayResumenHarina && (
-          <>
-            <Text style={pdfStyles.sectionTitle}>Resumen de harina</Text>
-            <View style={pdfStyles.table}>
-              <View style={pdfStyles.tableRow}>
-                <Text style={[pdfStyles.td, pdfStyles.w40]}>Productos por bandejas</Text>
-                <Text style={[pdfStyles.td, pdfStyles.w40]}></Text>
-                <Text style={[pdfStyles.td, pdfStyles.w20, pdfStyles.textRight]}>
-                  {vm.sumaBandejas} Lb
-                </Text>
-              </View>
-              <View style={pdfStyles.tableRow}>
-                <Text style={[pdfStyles.td, pdfStyles.w40]}>Productos por harina</Text>
-                <Text style={[pdfStyles.td, pdfStyles.w40]}></Text>
-                <Text style={[pdfStyles.td, pdfStyles.w20, pdfStyles.textRight]}>
-                  {vm.sumaHarina} Lb
-                </Text>
-              </View>
-              <View style={pdfStyles.tableRow}>
-                <Text style={[pdfStyles.td, pdfStyles.w40, { fontFamily: 'Helvetica-Bold' }]}>
-                  Total general
-                </Text>
-                <Text style={[pdfStyles.td, pdfStyles.w40]}></Text>
-                <Text
-                  style={[
-                    pdfStyles.td,
-                    pdfStyles.w20,
-                    pdfStyles.textRight,
-                    { fontFamily: 'Helvetica-Bold' },
-                  ]}
-                >
-                  {vm.totalHarina} Lb
-                </Text>
-              </View>
-            </View>
-          </>
+          <View style={localStyles.totalBox}>
+            <Text style={localStyles.totalLabel}>TOTAL HARINA:</Text>
+            <Text style={localStyles.totalValue}>{vm.totalHarina} Lb</Text>
+          </View>
         )}
 
         {vm.hayOtrosIngredientes && (
