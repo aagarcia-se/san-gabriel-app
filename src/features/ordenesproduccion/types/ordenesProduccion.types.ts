@@ -13,7 +13,7 @@ export interface OrdenProduccionListItem {
   estadoOrden: EstadoOrdenProduccion;
 }
 
-export type ConsultarOrdenesProduccionResponse = WithPayload<'ordenesProduccion',OrdenProduccionListItem[]>;
+export type ConsultarOrdenesProduccionResponse = WithPayload<'ordenesProduccion', OrdenProduccionListItem[]>;
 
 // --- Detalle: consumo de ingredientes ---
 export interface IngredienteConsumido {
@@ -27,7 +27,7 @@ export interface IngredienteConsumido {
   FechaConsumo: string;
 }
 
-export type ConsultarConsumoIngredientesResponse = WithPayload<'IngredientesConsumidos',IngredienteConsumido[]>;
+export type ConsultarConsumoIngredientesResponse = WithPayload<'IngredientesConsumidos', IngredienteConsumido[]>;
 
 // --- Ingreso de orden por batch (CSV + encabezado) ---
 // El backend recibe multipart/form-data: un archivo binario bajo la
@@ -44,49 +44,59 @@ export interface OrdenProduccionHeader {
   fechaCreacion: string;
 }
 
-export type IngresarOrdenProduccionBatchResponse = WithPayload<'idOrdenProduccion', number>;
-
 // --- Detalle de la orden: encabezado + productos ---
 export interface OrdenProduccionEncabezado {
-    idOrdenProduccion: number;
-    idSucursal: number;
-    nombreSucursal: string;
-    ordenTurno: TurnoProduccion;
-    nombrePanadero: string;
-    fechaAProducir: string;
-    idUsuario: number;
-    nombreUsuario: string;
-    fechaCierre: string | null;
-    fechaCreacion: string;
-    estadoOrden: EstadoOrdenProduccion;
-  }
-  
-  export type TipoProduccionDetalle = 'bandejas' | 'harina';
-  
-  export interface DetalleOrdenProducto {
-    idDetalleOrdenProduccion: number;
-    idOrdenProduccion: number;
-    idProducto: number;
-    nombreProducto: string;
-    idCategoria: number;
-    nombreCategoria: string;
-    tipoProduccion: TipoProduccionDetalle;
-    cantidadBandejas: number;
-    cantidadUnidades: number;
-    cantidadHarina: number;
-    fechaCreacion: string;
-  }
-  
-  export interface OrdenProduccionDetalle {
-    encabezadoOrden: OrdenProduccionEncabezado;
-    detalleOrden: DetalleOrdenProducto[];
-  }
-  
-  export type ConsultarDetalleOrdenesProduccionResponse = WithPayload<'detalleOrden',OrdenProduccionDetalle>;
+  idOrdenProduccion: number;
+  idSucursal: number;
+  nombreSucursal: string;
+  ordenTurno: TurnoProduccion;
+  nombrePanadero: string;
+  fechaAProducir: string;
+  idUsuario: number;
+  nombreUsuario: string;
+  fechaCierre: string | null;
+  fechaCreacion: string;
+  estadoOrden: EstadoOrdenProduccion;
+}
 
-  // --- Eliminar orden ---
+export type TipoProduccionDetalle = 'bandejas' | 'harina';
+
+export interface DetalleOrdenProducto {
+  idDetalleOrdenProduccion: number;
+  idOrdenProduccion: number;
+  idProducto: number;
+  nombreProducto: string;
+  idCategoria: number;
+  nombreCategoria: string;
+  tipoProduccion: TipoProduccionDetalle;
+  cantidadBandejas: number;
+  cantidadUnidades: number;
+  cantidadHarina: number;
+  fechaCreacion: string;
+}
+
+export interface OrdenProduccionDetalle {
+  encabezadoOrden: OrdenProduccionEncabezado;
+  detalleOrden: DetalleOrdenProducto[];
+}
+
+export type ConsultarDetalleOrdenesProduccionResponse = WithPayload<'detalleOrden', OrdenProduccionDetalle>;
+
+// El backend anida todo bajo "ordenProduccion" en la respuesta del POST
+// de /ingresar-orden-batch — incluye el detalle completo recién insertado
+// y el consumo de ingredientes ya calculado, para que el frontend pueda
+// generar el PDF sin necesidad de un segundo fetch.
+export interface IngresarOrdenProduccionBatchResult {
+  idOrdenGenerada: number;
+  detalleOrden: OrdenProduccionDetalle;
+  ingredientesConsumidos: IngredienteConsumido[];
+}
+
+export type IngresarOrdenProduccionBatchResponse = WithPayload<'ordenProduccion', IngresarOrdenProduccionBatchResult>;
+
+// --- Eliminar orden ---
 // La respuesta no trae ningún payload adicional, solo status/message.
 export interface EliminarOrdenProduccionResponse {
-    status: number;
-    message: string;
-  }
+  status: number;
+  message: string;
+}

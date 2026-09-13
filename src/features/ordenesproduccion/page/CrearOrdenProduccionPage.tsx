@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useIngresarOrdenProduccion } from '../api/useOrdenProduccionMutations';
+import { downloadPdf } from '@/shared/pdf/downloadPdf';
+import { OrdenProduccionPdfDocument } from '../pdf/OrdenProduccionPdfDocument';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { OrdenProduccionForm, type OrdenProduccionFormValues } from './OrdenProduccionForm';
@@ -27,7 +29,22 @@ export function CrearOrdenProduccionPage() {
         archivo: values.archivo,
       },
       {
-        onSuccess: () => navigate('/ordenes-produccion', { replace: true }),
+        onSuccess: (data) => {
+          // Toda la data para el PDF ya viene en la respuesta del POST —
+          // no hace falta ningún fetch adicional, así que no hay ninguna
+          // condición de carrera posible.
+          const { idOrdenGenerada, detalleOrden, ingredientesConsumidos } = data.ordenProduccion;
+
+          downloadPdf(
+            <OrdenProduccionPdfDocument
+              detalle={detalleOrden}
+              ingredientes={ingredientesConsumidos}
+            />,
+            `orden-produccion-${idOrdenGenerada}.pdf`,
+          );
+
+          navigate('/ordenes-produccion', { replace: true });
+        },
       },
     );
   }
