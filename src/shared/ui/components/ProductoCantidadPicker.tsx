@@ -653,12 +653,12 @@ function ProductoCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm font-semibold text-ink">
+          <p className="line-clamp-2 text-xl font-semibold text-ink">
             {producto.nombreProducto}
           </p>
 
           {producto.nombreCategoria && (
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-sm text-muted">
               {producto.nombreCategoria}
             </p>
           )}
@@ -673,7 +673,7 @@ function ProductoCard({
               bg-brand-500/10
               px-2.5
               py-1
-              text-[11px]
+              text-[15px]
               font-bold
               text-brand-600
               dark:text-brand-400

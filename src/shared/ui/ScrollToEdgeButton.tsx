@@ -82,7 +82,7 @@ export function ScrollToBottomButton({
   mobileActivationRef,
   mobileBreakpoint = 768,
   threshold = 240,
-  inactividadMs = 1200,
+  inactividadMs = 800,
   bottomOffsetClassName = 'bottom-24',
   rightOffsetClassName = 'right-6 sm:right-10',
   className = '',
@@ -319,7 +319,7 @@ export function ScrollToBottomButton({
        */
       setCercaFinal(
         scrollTop + clientHeight >=
-          scrollHeight - margenBorde,
+        scrollHeight - margenBorde,
       );
 
       /**
