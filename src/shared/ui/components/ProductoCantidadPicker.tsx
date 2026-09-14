@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   Croissant,
-  Minus,
-  Plus,
   Search,
 } from 'lucide-react';
 
@@ -326,6 +324,12 @@ export function ProductoCantidadPicker({
 
       {/* ================================================================
           CATEGORÍAS
+
+          Desktop: chips con scroll horizontal (se ven bien, hay espacio).
+          Móvil: un <select> nativo — el scroll horizontal en pantallas
+          angostas no se siente bien (no es obvio que hay más chips fuera
+          de vista, y compite con el scroll vertical de la página). Un
+          select es el patrón que cualquier usuario de móvil ya conoce.
       ================================================================= */}
 
       {categorias.length > 0 && (
@@ -343,11 +347,13 @@ export function ProductoCantidadPicker({
                 }
                 disabled={disabled}
                 className="
+                  hidden
                   text-xs
                   font-semibold
                   text-brand-600
                   hover:text-brand-700
                   dark:text-brand-400
+                  md:inline
                 "
               >
                 Ver todas
@@ -356,12 +362,54 @@ export function ProductoCantidadPicker({
           </div>
 
           {/* --------------------------------------------------------------
-              MÓVIL
-
-              Scroll horizontal para no ocupar demasiado espacio.
+              MÓVIL: select nativo
           -------------------------------------------------------------- */}
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <select
+            value={categoriaSeleccionada ?? ''}
+            onChange={(e) =>
+              setCategoriaSeleccionada(
+                e.target.value === ''
+                  ? null
+                  : Number(e.target.value),
+              )
+            }
+            disabled={disabled}
+            aria-label="Filtrar por categoría"
+            className="
+              h-12
+              w-full
+              rounded-2xl
+              border
+              border-line
+              bg-surface
+              px-4
+              text-sm
+              font-medium
+              text-ink
+              outline-none
+              transition
+              focus:border-brand-500
+              focus:ring-2
+              focus:ring-brand-500/20
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              md:hidden
+            "
+          >
+            <option value="">Todas las categorías</option>
+            {categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nombre}
+              </option>
+            ))}
+          </select>
+
+          {/* --------------------------------------------------------------
+              DESKTOP: chips
+          -------------------------------------------------------------- */}
+
+          <div className="hidden gap-2 overflow-x-auto pb-1 md:flex">
             {/* TODAS */}
             <button
               type="button"
@@ -588,7 +636,7 @@ function ProductoCard({
 
       <div className="flex items-start gap-3">
         <div
-          className={`
+          className="
             flex
             h-11
             w-11
@@ -596,12 +644,10 @@ function ProductoCard({
             items-center
             justify-center
             rounded-xl
-            ${
-              seleccionado
-                ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
-                : 'bg-surface-2 text-muted'
-            }
-          `}
+            bg-amber-500/10
+            text-amber-600
+            dark:text-amber-400
+          "
         >
           <Croissant className="h-5 w-5" />
         </div>
@@ -639,31 +685,10 @@ function ProductoCard({
       </div>
 
       {/* --------------------------------------------------------------
-          INFORMACIÓN DE PRODUCCIÓN
-      -------------------------------------------------------------- */}
-
-      {producto.tipoProduccion && (
-        <div className="mt-3 flex items-center gap-2">
-          <span className="rounded-lg bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted">
-            {producto.tipoProduccion}
-          </span>
-
-          {producto.unidadesPorBandeja &&
-            producto.tipoProduccion ===
-              'bandejas' && (
-              <span className="text-[11px] text-muted">
-                {producto.unidadesPorBandeja}{' '}
-                unidades/bandeja
-              </span>
-            )}
-        </div>
-      )}
-
-      {/* --------------------------------------------------------------
           CANTIDAD
       -------------------------------------------------------------- */}
 
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="mt-4 space-y-2">
         <div>
           <p className="text-xs font-semibold text-muted">
             Cantidad
@@ -688,6 +713,9 @@ function ProductoCard({
 
 /* ==========================================================================
    CONTROL DE CANTIDAD
+
+   Solo el input — sin botones +/-. El usuario escribe la cantidad
+   directamente (con el teclado numérico en móvil, gracias a inputMode).
    ========================================================================== */
 
 function CantidadControl({
@@ -734,142 +762,64 @@ function CantidadControl({
     }
   }
 
-  function disminuir() {
-    if (disabled) return;
-
-    onChange(Math.max(0, cantidad - 1));
-  }
-
-  function aumentar() {
-    if (disabled) return;
-
-    onChange(cantidad + 1);
-  }
-
   return (
-    <div
+    <input
+      type="number"
+      min={0}
+      inputMode="numeric"
+      value={mostrarCantidad}
+      disabled={disabled}
+      aria-label="Cantidad"
+      onFocus={() =>
+        setFocused(true)
+      }
+      onBlur={() =>
+        setFocused(false)
+      }
+      onChange={handleInputChange}
+      onWheel={(e) => {
+        /*
+         * IMPORTANTE:
+         * evita que el scroll modifique la cantidad.
+         */
+        e.currentTarget.blur();
+      }}
+      onKeyDown={(e) => {
+        /*
+         * Solo cantidades enteras.
+         */
+        if (
+          e.key === '.' ||
+          e.key === ',' ||
+          e.key === 'e' ||
+          e.key === 'E' ||
+          e.key === '-'
+        ) {
+          e.preventDefault();
+        }
+      }}
       className="
-        flex
-        shrink-0
-        items-center
+        h-10
+        w-15
         rounded-xl
         border
         border-line
         bg-surface-2
-        p-1
+        p-0
+        text-center
+        text-3xl
+        font-bold
+        text-ink
+        outline-none
+        transition-colors
+        [appearance:textfield]
+        focus:border-brand-500
+        focus:bg-surface
+        focus:ring-2
+        focus:ring-brand-500/20
+        [&::-webkit-inner-spin-button]:appearance-none
+        [&::-webkit-outer-spin-button]:appearance-none
       "
-    >
-      {/* ------------------------------------------------------------
-          MENOS
-      ------------------------------------------------------------- */}
-
-      <button
-        type="button"
-        aria-label="Disminuir cantidad"
-        disabled={
-          disabled || cantidad <= 0
-        }
-        onClick={disminuir}
-        className="
-          flex
-          h-11
-          w-11
-          items-center
-          justify-center
-          rounded-lg
-          text-ink
-          transition-colors
-          hover:bg-surface
-          active:scale-95
-          disabled:cursor-not-allowed
-          disabled:opacity-30
-        "
-      >
-        <Minus className="h-5 w-5" />
-      </button>
-
-      {/* ------------------------------------------------------------
-          INPUT
-      ------------------------------------------------------------- */}
-
-      <input
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={mostrarCantidad}
-        disabled={disabled}
-        aria-label="Cantidad"
-        onFocus={() =>
-          setFocused(true)
-        }
-        onBlur={() =>
-          setFocused(false)
-        }
-        onChange={handleInputChange}
-        onWheel={(e) => {
-          /*
-           * IMPORTANTE:
-           * evita que el scroll modifique la cantidad.
-           */
-          e.currentTarget.blur();
-        }}
-        onKeyDown={(e) => {
-          /*
-           * Solo cantidades enteras.
-           */
-          if (
-            e.key === '.' ||
-            e.key === ',' ||
-            e.key === 'e' ||
-            e.key === 'E' ||
-            e.key === '-'
-          ) {
-            e.preventDefault();
-          }
-        }}
-        className="
-          h-11
-          w-14
-          border-0
-          bg-transparent
-          p-0
-          text-center
-          text-base
-          font-bold
-          text-ink
-          outline-none
-          [appearance:textfield]
-          [&::-webkit-inner-spin-button]:appearance-none
-          [&::-webkit-outer-spin-button]:appearance-none
-        "
-      />
-
-      {/* ------------------------------------------------------------
-          MÁS
-      ------------------------------------------------------------- */}
-
-      <button
-        type="button"
-        aria-label="Aumentar cantidad"
-        disabled={disabled}
-        onClick={aumentar}
-        className="
-          flex
-          h-11
-          w-11
-          items-center
-          justify-center
-          rounded-lg
-          text-ink
-          transition-colors
-          hover:bg-surface
-          active:scale-95
-          disabled:cursor-not-allowed
-          disabled:opacity-30
-        "
-      >
-        <Plus className="h-5 w-5" />
-      </button>
-    </div>
+    />
   );
 }
