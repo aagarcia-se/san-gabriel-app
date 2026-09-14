@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Building2, CalendarDays, Phone, User } from 'lucide-react';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
 import { IconField } from '@/shared/ui/IconField';
-import { ProductoCantidadPicker, type ProductoCantidadItem } from '@/shared/components/ProductoCantidadPicker';
+import { ProductoCantidadPicker, type ProductoCantidadItem } from '@/shared/ui/components/ProductoCantidadPicker';
 
 export interface OrdenEspecialFormValues {
   nombreCliente: string;
