@@ -6,63 +6,76 @@ type Direccion = 'abajo' | 'arriba';
 
 interface ScrollToBottomButtonProps {
   /**
-   * Contenedor que hace scroll. Si no se pasa, el componente intenta
-   * detectarlo solo (útil cuando el AppShell scrollea un <main> interno
-   * en vez de la ventana) y, si no encuentra ninguno, cae a window.
+   * Contenedor que hace scroll.
+   * Si no se pasa, el componente intenta detectarlo automáticamente.
    */
   containerRef?: RefObject<HTMLElement | null>;
+
   /**
-   * Elemento a partir del cual se permite mostrar el botón EN MÓVIL
-   * (p. ej. el bloque de "Productos del pedido"). En desktop no aplica
-   * — ahí se muestra en cuanto hay scroll disponible, como antes.
-   * Si no se pasa, no hay restricción ni en móvil.
+   * Elemento a partir del cual se permite mostrar el botón EN MÓVIL.
+   * Por ejemplo, el bloque de "Productos del pedido".
+   *
+   * En desktop esta restricción no aplica.
    */
   mobileActivationRef?: RefObject<HTMLElement | null>;
-  /** Ancho de pantalla (px) por debajo del cual se considera "móvil". */
+
+  /** Ancho de pantalla por debajo del cual se considera móvil. */
   mobileBreakpoint?: number;
-  /** Cuánto contenido de sobra debe haber para que valga la pena mostrarlo. */
+
+  /** Cantidad mínima de contenido adicional para mostrar el botón. */
   threshold?: number;
-  /** Cuánto tiempo (ms) después del último evento de scroll se considera "quieto". */
+
+  /** Tiempo sin scroll después del cual se oculta el botón. */
   inactividadMs?: number;
+
   bottomOffsetClassName?: string;
   rightOffsetClassName?: string;
   className?: string;
-  /** Solo para depurar: fuerza que el botón se muestre. */
+
+  /** Solo para depuración: fuerza que el botón se muestre. */
   debugForzarVisible?: boolean;
 }
 
 function esScrolleable(el: HTMLElement): boolean {
   const estilo = window.getComputedStyle(el);
   const overflowY = estilo.overflowY;
+
   return (
     (overflowY === 'auto' || overflowY === 'scroll') &&
     el.scrollHeight > el.clientHeight + 1
   );
 }
 
-function buscarAncestroScrollable(nodo: HTMLElement | null): HTMLElement | null {
+function buscarAncestroScrollable(
+  nodo: HTMLElement | null,
+): HTMLElement | null {
   let actual = nodo?.parentElement ?? null;
-  while (actual && actual !== document.body && actual !== document.documentElement) {
-    if (esScrolleable(actual)) return actual;
+
+  while (
+    actual &&
+    actual !== document.body &&
+    actual !== document.documentElement
+  ) {
+    if (esScrolleable(actual)) {
+      return actual;
+    }
+
     actual = actual.parentElement;
   }
+
   return null;
 }
 
 /**
- * Botón flotante "inteligente":
- * - Sigue la dirección en la que estás scrolleando (si bajas, apunta y
- *   lleva hacia abajo; si subes, apunta y lleva hacia arriba).
- * - Solo aparece mientras hay actividad de scroll — se desvanece a los
- *   pocos segundos de estar quieto.
- * - Se oculta por completo al llegar al inicio o al final (ya no hace
- *   falta ahí).
- * - En móvil no aparece hasta pasar `mobileActivationRef` (p. ej. la
- *   sección de productos), y es un poco más chico.
+ * Botón flotante inteligente:
  *
- * Se renderiza en un portal a document.body para que `position: fixed`
- * sea de verdad relativo a la ventana, sin importar si algún ancestro
- * del layout tiene `transform`.
+ * - Si bajas, muestra flechas hacia abajo.
+ * - Si subes, muestra flechas hacia arriba.
+ * - Solo aparece mientras existe actividad de scroll.
+ * - Se oculta después de unos milisegundos sin movimiento.
+ * - No aparece al inicio ni al final.
+ * - En móvil puede esperar a que se pase una sección determinada.
+ * - Se renderiza mediante portal en document.body.
  */
 export function ScrollToBottomButton({
   containerRef,
@@ -76,167 +89,435 @@ export function ScrollToBottomButton({
   debugForzarVisible = false,
 }: ScrollToBottomButtonProps) {
   const anclaRef = useRef<HTMLSpanElement>(null);
+
   const [contenedor, setContenedor] = useState<HTMLElement | null>(null);
   const [montado, setMontado] = useState(false);
 
-  const [hayEspacioParaScroll, setHayEspacioParaScroll] = useState(false);
+  const [hayEspacioParaScroll, setHayEspacioParaScroll] =
+    useState(false);
+
   const [cercaInicio, setCercaInicio] = useState(true);
+
   const [cercaFinal, setCercaFinal] = useState(false);
-  const [direccion, setDireccion] = useState<Direccion>('abajo');
-  const [estaScrolleando, setEstaScrolleando] = useState(false);
+
+  const [direccion, setDireccion] =
+    useState<Direccion>('abajo');
+
+  const [estaScrolleando, setEstaScrolleando] =
+    useState(false);
+
   const [esMobile, setEsMobile] = useState(false);
-  const [pasoActivacion, setPasoActivacion] = useState(!mobileActivationRef);
+
+  const [pasoActivacion, setPasoActivacion] =
+    useState(!mobileActivationRef);
 
   const ultimoScrollTop = useRef(0);
-  const timeoutInactividad = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const timeoutInactividad =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * Indica que el componente ya está montado.
+   */
   useEffect(() => {
     setMontado(true);
   }, []);
 
-  // Detecta el contenedor real que scrollea.
+  /**
+   * Detecta cuál es el elemento que realmente hace scroll.
+   *
+   * Si se proporciona containerRef, usamos ese directamente.
+   *
+   * Si no, buscamos un ancestro con overflow-y auto/scroll.
+   */
   useEffect(() => {
     if (containerRef?.current) {
       setContenedor(containerRef.current);
       return;
     }
-    setContenedor(buscarAncestroScrollable(anclaRef.current));
+
+    const detectarContenedor = () => {
+      const encontrado = buscarAncestroScrollable(
+        anclaRef.current,
+      );
+
+      if (encontrado) {
+        setContenedor(encontrado);
+      }
+    };
+
+    // Primer intento.
+    detectarContenedor();
+
+    // Segundo intento por si el layout todavía no terminó
+    // de aplicar sus estilos de overflow.
+    const frame = requestAnimationFrame(() => {
+      detectarContenedor();
+    });
+
+    const timer = setTimeout(() => {
+      detectarContenedor();
+    }, 100);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [containerRef]);
 
-  // Detecta si estamos en viewport móvil.
+  /**
+   * Detecta si estamos en móvil.
+   */
   useEffect(() => {
     function leerAncho() {
-      setEsMobile(window.innerWidth < mobileBreakpoint);
+      setEsMobile(
+        window.innerWidth < mobileBreakpoint,
+      );
     }
+
     leerAncho();
-    window.addEventListener('resize', leerAncho);
-    return () => window.removeEventListener('resize', leerAncho);
+
+    window.addEventListener(
+      'resize',
+      leerAncho,
+    );
+
+    return () => {
+      window.removeEventListener(
+        'resize',
+        leerAncho,
+      );
+    };
   }, [mobileBreakpoint]);
 
-  // En móvil, espera a pasar la sección de productos antes de habilitarse.
+  /**
+   * En móvil:
+   *
+   * El botón se habilita cuando la parte superior
+   * de mobileActivationRef ya pasó el borde superior
+   * del contenedor que hace scroll.
+   *
+   * Esto evita el problema de comparar contra el viewport
+   * cuando realmente el scroll pertenece a un <main>.
+   */
   useEffect(() => {
     if (!mobileActivationRef?.current) {
       setPasoActivacion(true);
       return;
     }
-    const el = mobileActivationRef.current;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Ya lo pasamos cuando su borde superior queda arriba del viewport.
-        setPasoActivacion(entry.boundingClientRect.top <= 0);
-      },
-      { root: contenedor ?? null, threshold: 0 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [mobileActivationRef, contenedor]);
 
-  // Escucha el scroll: dirección, cercanía a los extremos, y actividad.
+    const activationEl =
+      mobileActivationRef.current;
+
+    function comprobarActivacion() {
+      const rect =
+        activationEl.getBoundingClientRect();
+
+      if (contenedor) {
+        const containerRect =
+          contenedor.getBoundingClientRect();
+
+        /**
+         * Se considera activado cuando la sección
+         * ya pasó el borde superior del contenedor.
+         */
+        setPasoActivacion(
+          rect.top <= containerRect.top,
+        );
+      } else {
+        /**
+         * Si el scroll es el de window,
+         * comparamos contra el viewport.
+         */
+        setPasoActivacion(
+          rect.top <= 0,
+        );
+      }
+    }
+
+    comprobarActivacion();
+
+    const target: HTMLElement | Window =
+      contenedor ?? window;
+
+    target.addEventListener(
+      'scroll',
+      comprobarActivacion,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      'resize',
+      comprobarActivacion,
+    );
+
+    return () => {
+      target.removeEventListener(
+        'scroll',
+        comprobarActivacion,
+      );
+
+      window.removeEventListener(
+        'resize',
+        comprobarActivacion,
+      );
+    };
+  }, [
+    mobileActivationRef,
+    contenedor,
+  ]);
+
+  /**
+   * Escucha el scroll:
+   *
+   * - determina dirección
+   * - determina si hay suficiente contenido
+   * - determina si estamos cerca del inicio
+   * - determina si estamos cerca del final
+   * - controla el estado de actividad
+   */
   useEffect(() => {
     const el = contenedor;
-    const target: HTMLElement | Window = el ?? window;
+
+    const target: HTMLElement | Window =
+      el ?? window;
+
     const margenBorde = 8;
 
     function leerScroll() {
-      const scrollTop = el ? el.scrollTop : window.scrollY;
-      const scrollHeight = el ? el.scrollHeight : document.documentElement.scrollHeight;
-      const clientHeight = el ? el.clientHeight : window.innerHeight;
+      const scrollTop = el
+        ? el.scrollTop
+        : window.scrollY;
 
-      setHayEspacioParaScroll(scrollHeight - clientHeight > threshold);
-      setCercaInicio(scrollTop <= margenBorde);
-      setCercaFinal(scrollTop + clientHeight >= scrollHeight - margenBorde);
+      const scrollHeight = el
+        ? el.scrollHeight
+        : document.documentElement.scrollHeight;
 
-      if (scrollTop > ultimoScrollTop.current + 2) {
+      const clientHeight = el
+        ? el.clientHeight
+        : window.innerHeight;
+
+      /**
+       * ¿Existe suficiente contenido adicional
+       * como para que tenga sentido mostrar el botón?
+       */
+      setHayEspacioParaScroll(
+        scrollHeight - clientHeight > threshold,
+      );
+
+      /**
+       * ¿Estamos cerca del inicio?
+       */
+      setCercaInicio(
+        scrollTop <= margenBorde,
+      );
+
+      /**
+       * ¿Estamos cerca del final?
+       */
+      setCercaFinal(
+        scrollTop + clientHeight >=
+          scrollHeight - margenBorde,
+      );
+
+      /**
+       * Determina dirección del scroll.
+       */
+      if (
+        scrollTop >
+        ultimoScrollTop.current + 2
+      ) {
         setDireccion('abajo');
-      } else if (scrollTop < ultimoScrollTop.current - 2) {
+      } else if (
+        scrollTop <
+        ultimoScrollTop.current - 2
+      ) {
         setDireccion('arriba');
       }
-      ultimoScrollTop.current = scrollTop;
 
+      ultimoScrollTop.current =
+        scrollTop;
+
+      /**
+       * Se considera que hay actividad.
+       */
       setEstaScrolleando(true);
-      if (timeoutInactividad.current) clearTimeout(timeoutInactividad.current);
-      timeoutInactividad.current = setTimeout(() => {
-        setEstaScrolleando(false);
-      }, inactividadMs);
+
+      /**
+       * Reinicia el temporizador.
+       */
+      if (timeoutInactividad.current) {
+        clearTimeout(
+          timeoutInactividad.current,
+        );
+      }
+
+      timeoutInactividad.current =
+        setTimeout(() => {
+          setEstaScrolleando(false);
+        }, inactividadMs);
     }
 
+    /**
+     * Ejecutamos inmediatamente para establecer
+     * correctamente el estado inicial.
+     */
     leerScroll();
 
-    target.addEventListener('scroll', leerScroll, { passive: true });
-    window.addEventListener('resize', leerScroll);
+    target.addEventListener(
+      'scroll',
+      leerScroll,
+      {
+        passive: true,
+      },
+    );
+
+    window.addEventListener(
+      'resize',
+      leerScroll,
+    );
 
     return () => {
-      target.removeEventListener('scroll', leerScroll);
-      window.removeEventListener('resize', leerScroll);
-      if (timeoutInactividad.current) clearTimeout(timeoutInactividad.current);
-    };
-  }, [contenedor, threshold, inactividadMs]);
+      target.removeEventListener(
+        'scroll',
+        leerScroll,
+      );
 
+      window.removeEventListener(
+        'resize',
+        leerScroll,
+      );
+
+      if (timeoutInactividad.current) {
+        clearTimeout(
+          timeoutInactividad.current,
+        );
+      }
+    };
+  }, [
+    contenedor,
+    threshold,
+    inactividadMs,
+  ]);
+
+  /**
+   * Lleva el scroll al extremo correspondiente.
+   */
   function irAlExtremo() {
     const el = contenedor;
-    const destino = direccion === 'abajo' ? (el ? el.scrollHeight : document.documentElement.scrollHeight) : 0;
+
+    const destino =
+      direccion === 'abajo'
+        ? el
+          ? el.scrollHeight
+          : document.documentElement.scrollHeight
+        : 0;
 
     if (el) {
-      el.scrollTo({ top: destino, behavior: 'smooth' });
+      el.scrollTo({
+        top: destino,
+        behavior: 'smooth',
+      });
     } else {
-      window.scrollTo({ top: destino, behavior: 'smooth' });
+      window.scrollTo({
+        top: destino,
+        behavior: 'smooth',
+      });
     }
   }
 
-  const gatePorSeccionMovil = !esMobile || pasoActivacion;
+  /**
+   * En desktop no hay restricción por sección.
+   *
+   * En móvil:
+   * solamente se permite después de pasar
+   * mobileActivationRef.
+   */
+  const gatePorSeccionMovil =
+    !esMobile || pasoActivacion;
 
+  /**
+   * Determina si el botón debe mostrarse.
+   */
   const visible =
     debugForzarVisible ||
-    (hayEspacioParaScroll &&
+    (
+      hayEspacioParaScroll &&
       estaScrolleando &&
       !cercaInicio &&
       !cercaFinal &&
-      gatePorSeccionMovil);
+      gatePorSeccionMovil
+    );
 
-  const boton = visible && (
-    <button
-      type="button"
-      onClick={irAlExtremo}
-      aria-label={direccion === 'abajo' ? 'Ir hacia abajo' : 'Ir hacia arriba'}
-      className={`
-        fixed
-        ${rightOffsetClassName}
-        ${bottomOffsetClassName}
-        z-[100]
-        flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        rounded-full
-        bg-brand-500
-        text-white
-        shadow-lg
-        shadow-brand-500/30
-        transition-all
-        duration-200
-        hover:bg-brand-600
-        active:scale-95
-        md:h-12
-        md:w-12
-        ${className}
-      `}
-    >
-      {direccion === 'abajo' ? (
-        <ChevronsDown className="h-4 w-4 md:h-5 md:w-5" />
-      ) : (
-        <ChevronsUp className="h-4 w-4 md:h-5 md:w-5" />
-      )}
-    </button>
-  );
+  /**
+   * Botón.
+   */
+  const boton =
+    visible && (
+      <button
+        type="button"
+        onClick={irAlExtremo}
+        aria-label={
+          direccion === 'abajo'
+            ? 'Ir hacia abajo'
+            : 'Ir hacia arriba'
+        }
+        className={`
+          fixed
+          ${rightOffsetClassName}
+          ${bottomOffsetClassName}
+          z-[100]
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-full
+          bg-brand-500
+          text-white
+          shadow-lg
+          shadow-brand-500/30
+          transition-all
+          duration-200
+          hover:bg-brand-600
+          active:scale-95
+          md:h-12
+          md:w-12
+          ${className}
+        `}
+      >
+        {direccion === 'abajo' ? (
+          <ChevronsDown className="h-4 w-4 md:h-5 md:w-5" />
+        ) : (
+          <ChevronsUp className="h-4 w-4 md:h-5 md:w-5" />
+        )}
+      </button>
+    );
 
   return (
     <>
-      {/* Ancla invisible en el árbol normal: solo sirve para ubicar el
-          contenedor real de scroll (no se porta a document.body). */}
-      <span ref={anclaRef} aria-hidden className="sr-only" />
+      {/*
+        Ancla invisible utilizada para detectar
+        el contenedor real de scroll.
+      */}
+      <span
+        ref={anclaRef}
+        aria-hidden
+        className="sr-only"
+      />
 
-      {montado && boton && createPortal(boton, document.body)}
+      {/*
+        Portal para que position: fixed sea relativo
+        al viewport/document.body.
+      */}
+      {montado &&
+        boton &&
+        createPortal(
+          boton,
+          document.body,
+        )}
     </>
   );
 }
