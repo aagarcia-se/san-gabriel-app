@@ -2,7 +2,7 @@ import { Badge } from '@/shared/ui/Badge';
 import { calcularEstadoEntrega, ESTADO_ENTREGA_LABEL } from '../lib/estadoEntrega';
 
 const VARIANT_POR_ESTADO = {
-  pendiente: 'neutral',
+  pendiente: 'warning',
   en_proceso: 'brand',
   entregado: 'success',
 } as const;
