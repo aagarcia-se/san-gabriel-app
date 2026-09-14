@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { ArrowDownCircle, ArrowRightLeft, Boxes, PackagePlus, Search } from 'lucide-react';
-import { useState } from 'react';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
+import { CategoriaFilter } from '@/shared/ui/CategoriaFilter';
 import { useStockGeneral } from '../api/useStockGeneral';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { Spinner } from '@/shared/ui/Spinner';
@@ -47,17 +47,39 @@ export function InventarioSucursalPage() {
   const { data: stock, isLoading, isError, error, refetch } = useStockGeneral(idSucursal, fecha);
 
   const [search, setSearch] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
+
+  // Categorías derivadas del propio stock (idCategoria + nombreCategoria
+  // de cada item), igual que ya haces en ProductoCantidadPicker — no
+  // hace falta un endpoint de categorías aparte.
+  const categorias = useMemo(() => {
+    const mapa = new Map<number, string>();
+    (stock ?? []).forEach((item) => {
+      if (item.idCategoria != null && item.nombreCategoria) {
+        mapa.set(item.idCategoria, item.nombreCategoria);
+      }
+    });
+    return Array.from(mapa.entries())
+      .map(([id, nombre]) => ({ id, nombre }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [stock]);
 
   const filtered = useMemo(() => {
     if (!stock) return [];
     const term = search.trim().toLowerCase();
-    if (!term) return stock;
-    return stock.filter(
-      (s) =>
-        s.nombreProducto.toLowerCase().includes(term) ||
-        s.nombreCategoria.toLowerCase().includes(term),
-    );
-  }, [stock, search]);
+    return stock.filter((s) => {
+      if (categoriaSeleccionada !== null && s.idCategoria !== categoriaSeleccionada) {
+        return false;
+      }
+      if (term) {
+        return (
+          s.nombreProducto.toLowerCase().includes(term) ||
+          s.nombreCategoria.toLowerCase().includes(term)
+        );
+      }
+      return true;
+    });
+  }, [stock, search, categoriaSeleccionada]);
 
   return (
     <div className="space-y-4">
@@ -102,16 +124,23 @@ export function InventarioSucursalPage() {
           />
         </div>
 
+        {/* Filtro por categoría: mismo componente que en ProductoCantidadPicker. */}
+        <CategoriaFilter
+          categorias={categorias}
+          categoriaSeleccionada={categoriaSeleccionada}
+          onChange={setCategoriaSeleccionada}
+        />
+
         {isLoading && <Spinner label="Cargando existencias…" />}
 
         {isError && <ErrorState message={error?.message} onRetry={() => refetch()} />}
 
         {!isLoading && !isError && filtered.length === 0 && (
           <EmptyState
-            title={search ? 'Sin resultados' : 'Sin existencias registradas'}
+            title={search || categoriaSeleccionada !== null ? 'Sin resultados' : 'Sin existencias registradas'}
             description={
-              search
-                ? 'Prueba con otro término de búsqueda.'
+              search || categoriaSeleccionada !== null
+                ? 'Prueba con otro término de búsqueda o categoría.'
                 : 'Todavía no hay productos con existencias en esta sucursal.'
             }
           />

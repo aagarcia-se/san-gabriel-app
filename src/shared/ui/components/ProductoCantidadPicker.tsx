@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 
 import { useProductos } from '@/features/productos/api/useProductos';
+import { CategoriaFilter } from '@/shared/ui/CategoriaFilter';
 import type { ProductoConPrecio } from '@/features/productos/types/precio.types';
 
 export interface ProductoCantidadItem {
@@ -324,149 +325,14 @@ export function ProductoCantidadPicker({
 
       {/* ================================================================
           CATEGORÍAS
-
-          Desktop: chips con scroll horizontal (se ven bien, hay espacio).
-          Móvil: un <select> nativo — el scroll horizontal en pantallas
-          angostas no se siente bien (no es obvio que hay más chips fuera
-          de vista, y compite con el scroll vertical de la página). Un
-          select es el patrón que cualquier usuario de móvil ya conoce.
       ================================================================= */}
 
-      {categorias.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              Categoría
-            </p>
-
-            {categoriaSeleccionada !== null && (
-              <button
-                type="button"
-                onClick={() =>
-                  setCategoriaSeleccionada(null)
-                }
-                disabled={disabled}
-                className="
-                  hidden
-                  text-xs
-                  font-semibold
-                  text-brand-600
-                  hover:text-brand-700
-                  dark:text-brand-400
-                  md:inline
-                "
-              >
-                Ver todas
-              </button>
-            )}
-          </div>
-
-          {/* --------------------------------------------------------------
-              MÓVIL: select nativo
-          -------------------------------------------------------------- */}
-
-          <select
-            value={categoriaSeleccionada ?? ''}
-            onChange={(e) =>
-              setCategoriaSeleccionada(
-                e.target.value === ''
-                  ? null
-                  : Number(e.target.value),
-              )
-            }
-            disabled={disabled}
-            aria-label="Filtrar por categoría"
-            className="
-              h-12
-              w-full
-              rounded-2xl
-              border
-              border-line
-              bg-surface
-              px-4
-              text-sm
-              font-medium
-              text-ink
-              outline-none
-              transition
-              focus:border-brand-500
-              focus:ring-2
-              focus:ring-brand-500/20
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-              md:hidden
-            "
-          >
-            <option value="">Todas las categorías</option>
-            {categorias.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nombre}
-              </option>
-            ))}
-          </select>
-
-          {/* --------------------------------------------------------------
-              DESKTOP: chips
-          -------------------------------------------------------------- */}
-
-          <div className="hidden gap-2 overflow-x-auto pb-1 md:flex">
-            {/* TODAS */}
-            <button
-              type="button"
-              onClick={() =>
-                setCategoriaSeleccionada(null)
-              }
-              disabled={disabled}
-              className={`
-                shrink-0
-                rounded-full
-                px-4
-                py-2.5
-                text-sm
-                font-semibold
-                transition-all
-                ${
-                  categoriaSeleccionada === null
-                    ? 'bg-brand-500 text-white shadow-sm'
-                    : 'bg-surface-2 text-muted hover:bg-surface hover:text-ink'
-                }
-              `}
-            >
-              Todas
-            </button>
-
-            {categorias.map((categoria) => (
-              <button
-                key={categoria.id}
-                type="button"
-                onClick={() =>
-                  setCategoriaSeleccionada(
-                    categoria.id,
-                  )
-                }
-                disabled={disabled}
-                className={`
-                  shrink-0
-                  rounded-full
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  transition-all
-                  ${
-                    categoriaSeleccionada ===
-                    categoria.id
-                      ? 'bg-brand-500 text-white shadow-sm'
-                      : 'bg-surface-2 text-muted hover:bg-surface hover:text-ink'
-                  }
-                `}
-              >
-                {categoria.nombre}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <CategoriaFilter
+        categorias={categorias}
+        categoriaSeleccionada={categoriaSeleccionada}
+        onChange={setCategoriaSeleccionada}
+        disabled={disabled}
+      />
 
       {/* ================================================================
           RESUMEN
