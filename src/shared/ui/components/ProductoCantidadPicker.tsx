@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Croissant,
   Minus,
   Plus,
   Search,
-  Trash2,
-  X,
 } from 'lucide-react';
+
 import { useProductos } from '@/features/productos/api/useProductos';
 import type { ProductoConPrecio } from '@/features/productos/types/precio.types';
 
@@ -21,9 +20,17 @@ interface ProductoCantidadPickerProps {
   value: ProductoCantidadItem[];
   onChange: (value: ProductoCantidadItem[]) => void;
   disabled?: boolean;
-  /** Cantidad inicial al agregar un producto nuevo. Por defecto 0. */
+
+  /**
+   * Cantidad inicial para productos que todavía
+   * no forman parte de la orden.
+   */
   cantidadInicial?: number;
 }
+
+/* ==========================================================================
+   COMPONENTE PRINCIPAL
+   ========================================================================== */
 
 export function ProductoCantidadPicker({
   value,
@@ -31,250 +38,646 @@ export function ProductoCantidadPicker({
   disabled,
   cantidadInicial = 0,
 }: ProductoCantidadPickerProps) {
-  const { data: productos, isLoading, isError } = useProductos();
+  const {
+    data: productos = [],
+    isLoading,
+    isError,
+  } = useProductos();
 
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [busqueda, setBusqueda] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] =
+    useState<number | null>(null);
 
-  const idsSeleccionados = useMemo(
-    () => new Set(value.map((v) => v.idProducto)),
+  /* ------------------------------------------------------------------------
+     PRODUCTOS INDEXADOS
+
+     Esto nos permite saber rápidamente qué cantidad tiene
+     cada producto que ya está en la orden.
+  ------------------------------------------------------------------------ */
+
+  const cantidadesPorProducto = useMemo(() => {
+    const mapa = new Map<
+      number,
+      ProductoCantidadItem
+    >();
+
+    value.forEach((item) => {
+      mapa.set(item.idProducto, item);
+    });
+
+    return mapa;
+  }, [value]);
+
+  /* ------------------------------------------------------------------------
+     CATEGORÍAS
+
+     Las obtenemos directamente desde los productos.
+     No necesitamos useCategorias().
+  ------------------------------------------------------------------------ */
+
+  const categorias = useMemo(() => {
+    const mapa = new Map<
+      number,
+      string
+    >();
+
+    productos.forEach((producto) => {
+      if (
+        producto.idCategoria != null &&
+        producto.nombreCategoria
+      ) {
+        mapa.set(
+          producto.idCategoria,
+          producto.nombreCategoria,
+        );
+      }
+    });
+
+    return Array.from(mapa.entries())
+      .map(([id, nombre]) => ({
+        id,
+        nombre,
+      }))
+      .sort((a, b) =>
+        a.nombre.localeCompare(b.nombre),
+      );
+  }, [productos]);
+
+  /* ------------------------------------------------------------------------
+     PRODUCTOS FILTRADOS
+  ------------------------------------------------------------------------ */
+
+  const productosFiltrados = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+
+    return productos.filter((producto) => {
+      /* Filtro por categoría */
+      if (
+        categoriaSeleccionada !== null &&
+        producto.idCategoria !== categoriaSeleccionada
+      ) {
+        return false;
+      }
+
+      /* Filtro por nombre */
+      if (texto) {
+        const nombre = producto.nombreProducto
+          .toLowerCase();
+
+        if (!nombre.includes(texto)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    productos,
+    busqueda,
+    categoriaSeleccionada,
+  ]);
+
+  /* ------------------------------------------------------------------------
+     TOTALES
+  ------------------------------------------------------------------------ */
+
+  const productosConCantidad = useMemo(
+    () =>
+      value.filter(
+        (item) => item.cantidad > 0,
+      ),
     [value],
   );
 
-  function agregarProducto(producto: ProductoConPrecio) {
+  const totalUnidades = useMemo(
+    () =>
+      value.reduce(
+        (total, item) =>
+          total + item.cantidad,
+        0,
+      ),
+    [value],
+  );
+
+  /* ------------------------------------------------------------------------
+     CAMBIAR CANTIDAD
+  ------------------------------------------------------------------------ */
+
+  function actualizarCantidad(
+    producto: ProductoConPrecio,
+    cantidad: number,
+  ) {
+    if (disabled) return;
+
+    const cantidadValida =
+      Number.isFinite(cantidad) &&
+      cantidad >= 0
+        ? Math.floor(cantidad)
+        : 0;
+
+    const existente =
+      cantidadesPorProducto.get(
+        producto.idProducto,
+      );
+
+    /*
+     * Si la cantidad vuelve a 0,
+     * quitamos el producto del value.
+     *
+     * Así value solamente contiene productos
+     * que realmente forman parte de la orden.
+     */
+    if (cantidadValida === 0) {
+      if (!existente) {
+        return;
+      }
+
+      onChange(
+        value.filter(
+          (item) =>
+            item.idProducto !==
+            producto.idProducto,
+        ),
+      );
+
+      return;
+    }
+
+    /*
+     * Si ya existe, solamente actualizamos
+     * la cantidad.
+     */
+    if (existente) {
+      onChange(
+        value.map((item) =>
+          item.idProducto ===
+          producto.idProducto
+            ? {
+                ...item,
+                cantidad: cantidadValida,
+              }
+            : item,
+        ),
+      );
+
+      return;
+    }
+
+    /*
+     * Si todavía no existe, lo agregamos.
+     */
     onChange([
       ...value,
       {
-        idProducto: producto.idProducto,
-        nombreProducto: producto.nombreProducto,
-        cantidad: cantidadInicial,
+        idProducto:
+          producto.idProducto,
+        nombreProducto:
+          producto.nombreProducto,
+        cantidad: cantidadValida,
       },
     ]);
   }
 
-  function actualizarCantidad(idProducto: number, cantidad: number) {
-    const cantidadValida =
-      Number.isFinite(cantidad) && cantidad >= 0 ? cantidad : 0;
+  /* ------------------------------------------------------------------------
+     LOADING
+  ------------------------------------------------------------------------ */
 
-    onChange(
-      value.map((v) =>
-        v.idProducto === idProducto
-          ? { ...v, cantidad: cantidadValida }
-          : v,
-      ),
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-14 animate-pulse rounded-2xl bg-surface-2" />
+
+        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="h-32 animate-pulse rounded-2xl bg-surface-2" />
+          <div className="h-32 animate-pulse rounded-2xl bg-surface-2" />
+          <div className="h-32 animate-pulse rounded-2xl bg-surface-2" />
+          <div className="h-32 animate-pulse rounded-2xl bg-surface-2" />
+        </div>
+      </div>
     );
   }
 
-  function quitarProducto(idProducto: number) {
-    onChange(value.filter((v) => v.idProducto !== idProducto));
-  }
+  /* ------------------------------------------------------------------------
+     ERROR
+  ------------------------------------------------------------------------ */
 
-  function seleccionarProducto(producto: ProductoConPrecio) {
-    agregarProducto(producto);
+  if (isError) {
+    return (
+      <div className="rounded-2xl bg-danger-500/10 px-4 py-4 text-sm text-danger-600 dark:text-danger-400">
+        No se pudo cargar el catálogo de
+        productos.
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
-      {/* ------------------------------------------------------------------ */}
-      {/* Botón agregar producto                                             */}
-      {/* ------------------------------------------------------------------ */}
+      {/* ================================================================
+          BÚSQUEDA
+      ================================================================= */}
 
-      <button
-        type="button"
-        disabled={disabled || isLoading || isError}
-        onClick={() => setModalAbierto(true)}
-        className="
-          flex w-full items-center gap-4 rounded-2xl border-2 border-dashed
-          border-brand-500/40 bg-brand-500/5 px-4 py-4 text-left
-          transition-all
-          hover:border-brand-500/70
-          hover:bg-brand-500/10
-          active:scale-[0.99]
-          disabled:cursor-not-allowed
-          disabled:opacity-50
-          sm:px-5 sm:py-5
-        "
-      >
-        <div
+      <div className="relative">
+        <Search
           className="
-            flex h-12 w-12 shrink-0 items-center justify-center
-            rounded-xl bg-brand-500 text-white shadow-sm
+            pointer-events-none
+            absolute
+            left-4
+            top-1/2
+            h-5
+            w-5
+            -translate-y-1/2
+            text-muted
           "
-        >
-          <Plus className="h-6 w-6" />
-        </div>
+        />
 
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-ink sm:text-base">
-            Agregar producto
-          </p>
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(e) =>
+            setBusqueda(e.target.value)
+          }
+          disabled={disabled}
+          placeholder="Buscar producto por nombre..."
+          className="
+            h-14
+            w-full
+            rounded-2xl
+            border
+            border-line
+            bg-surface
+            pl-12
+            pr-4
+            text-base
+            text-ink
+            shadow-sm
+            outline-none
+            transition
+            placeholder:text-muted
+            focus:border-brand-500
+            focus:ring-2
+            focus:ring-brand-500/20
+            disabled:cursor-not-allowed
+            disabled:opacity-50
+          "
+        />
+      </div>
 
-          <p className="mt-0.5 text-xs text-muted sm:text-sm">
-            Toca aquí para elegir un producto
-          </p>
-        </div>
-      </button>
+      {/* ================================================================
+          CATEGORÍAS
+      ================================================================= */}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Error                                                              */}
-      {/* ------------------------------------------------------------------ */}
-
-      {isError && (
-        <p className="rounded-xl bg-danger-500/10 px-4 py-3 text-sm text-danger-600 dark:text-danger-400">
-          No se pudo cargar el catálogo de productos.
-        </p>
-      )}
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Productos seleccionados                                            */}
-      {/* ------------------------------------------------------------------ */}
-
-      {value.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-surface-2/50 px-5 py-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-2">
-            <Croissant className="h-5 w-5 text-muted" />
-          </div>
-
-          <p className="mt-3 text-sm font-medium text-ink">
-            No hay productos todavía
-          </p>
-
-          <p className="mt-1 text-xs text-muted">
-            Agrega los productos que forman parte de esta orden.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
+      {categorias.length > 0 && (
+        <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
-            <div>
-              <h3 className="text-sm font-semibold text-ink">
-                Productos de la orden
-              </h3>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              Categoría
+            </p>
 
-              <p className="text-xs text-muted">
-                {value.length}{' '}
-                {value.length === 1
-                  ? 'producto agregado'
-                  : 'productos agregados'}
-              </p>
-            </div>
-
-            <div className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold text-brand-600 dark:text-brand-400">
-              {value.reduce(
-                (total, item) => total + item.cantidad,
-                0,
-              )}{' '}
-              unidades
-            </div>
+            {categoriaSeleccionada !== null && (
+              <button
+                type="button"
+                onClick={() =>
+                  setCategoriaSeleccionada(null)
+                }
+                disabled={disabled}
+                className="
+                  text-xs
+                  font-semibold
+                  text-brand-600
+                  hover:text-brand-700
+                  dark:text-brand-400
+                "
+              >
+                Ver todas
+              </button>
+            )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {value.map((item) => (
-              <ProductoSeleccionado
-                key={item.idProducto}
-                item={item}
-                disabled={disabled}
-                onCantidadChange={(cantidad) =>
-                  actualizarCantidad(
-                    item.idProducto,
-                    cantidad,
+          {/* --------------------------------------------------------------
+              MÓVIL
+
+              Scroll horizontal para no ocupar demasiado espacio.
+          -------------------------------------------------------------- */}
+
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {/* TODAS */}
+            <button
+              type="button"
+              onClick={() =>
+                setCategoriaSeleccionada(null)
+              }
+              disabled={disabled}
+              className={`
+                shrink-0
+                rounded-full
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                transition-all
+                ${
+                  categoriaSeleccionada === null
+                    ? 'bg-brand-500 text-white shadow-sm'
+                    : 'bg-surface-2 text-muted hover:bg-surface hover:text-ink'
+                }
+              `}
+            >
+              Todas
+            </button>
+
+            {categorias.map((categoria) => (
+              <button
+                key={categoria.id}
+                type="button"
+                onClick={() =>
+                  setCategoriaSeleccionada(
+                    categoria.id,
                   )
                 }
-                onRemove={() =>
-                  quitarProducto(item.idProducto)
-                }
-              />
+                disabled={disabled}
+                className={`
+                  shrink-0
+                  rounded-full
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  transition-all
+                  ${
+                    categoriaSeleccionada ===
+                    categoria.id
+                      ? 'bg-brand-500 text-white shadow-sm'
+                      : 'bg-surface-2 text-muted hover:bg-surface hover:text-ink'
+                  }
+                `}
+              >
+                {categoria.nombre}
+              </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Modal selector                                                     */}
-      {/* ------------------------------------------------------------------ */}
+      {/* ================================================================
+          RESUMEN
+      ================================================================= */}
 
-      {modalAbierto && (
-        <SelectorProductosModal
-          productos={productos}
-          isLoading={isLoading}
-          idsExcluidos={idsSeleccionados}
-          disabled={disabled}
-          onSelect={seleccionarProducto}
-          onClose={() => setModalAbierto(false)}
-        />
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+          rounded-2xl
+          border
+          border-line
+          bg-surface
+          px-4
+          py-3
+        "
+      >
+        <div>
+          <p className="text-sm font-semibold text-ink">
+            {productosFiltrados.length}{' '}
+            {productosFiltrados.length === 1
+              ? 'producto'
+              : 'productos'}
+          </p>
+
+          <p className="text-xs text-muted">
+            Mostrando en el catálogo
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-sm font-bold text-brand-600 dark:text-brand-400">
+            {productosConCantidad.length}{' '}
+            {productosConCantidad.length === 1
+              ? 'seleccionado'
+              : 'seleccionados'}
+          </p>
+
+          <p className="text-xs text-muted">
+            {totalUnidades}{' '}
+            {totalUnidades === 1
+              ? 'unidad'
+              : 'unidades'}
+          </p>
+        </div>
+      </div>
+
+      {/* ================================================================
+          SIN PRODUCTOS
+      ================================================================= */}
+
+      {productosFiltrados.length === 0 ? (
+        <div
+          className="
+            rounded-2xl
+            border
+            border-dashed
+            border-line
+            px-5
+            py-10
+            text-center
+          "
+        >
+          <div
+            className="
+              mx-auto
+              flex
+              h-12
+              w-12
+              items-center
+              justify-center
+              rounded-full
+              bg-surface-2
+            "
+          >
+            <Search className="h-5 w-5 text-muted" />
+          </div>
+
+          <p className="mt-3 text-sm font-semibold text-ink">
+            No encontramos productos
+          </p>
+
+          <p className="mt-1 text-xs text-muted">
+            Prueba con otro nombre o categoría.
+          </p>
+        </div>
+      ) : (
+        /* ================================================================
+           PRODUCTOS
+        ================================================================= */
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {productosFiltrados.map(
+            (producto) => {
+              const item =
+                cantidadesPorProducto.get(
+                  producto.idProducto,
+                );
+
+              const cantidad =
+                item?.cantidad ??
+                cantidadInicial;
+
+              return (
+                <ProductoCard
+                  key={producto.idProducto}
+                  producto={producto}
+                  cantidad={cantidad}
+                  disabled={disabled}
+                  onCantidadChange={(
+                    nuevaCantidad,
+                  ) =>
+                    actualizarCantidad(
+                      producto,
+                      nuevaCantidad,
+                    )
+                  }
+                />
+              );
+            },
+          )}
+        </div>
       )}
     </div>
   );
 }
 
 /* ==========================================================================
-   PRODUCTO SELECCIONADO
+   PRODUCTO CARD
    ========================================================================== */
 
-function ProductoSeleccionado({
-  item,
+function ProductoCard({
+  producto,
+  cantidad,
   disabled,
   onCantidadChange,
-  onRemove,
 }: {
-  item: ProductoCantidadItem;
+  producto: ProductoConPrecio;
+  cantidad: number;
   disabled?: boolean;
-  onCantidadChange: (cantidad: number) => void;
-  onRemove: () => void;
+  onCantidadChange: (
+    cantidad: number,
+  ) => void;
 }) {
+  const seleccionado = cantidad > 0;
+
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+    <div
+      className={`
+        rounded-2xl
+        border
+        bg-surface
+        p-4
+        shadow-sm
+        transition-all
+        ${
+          seleccionado
+            ? 'border-brand-500/40 ring-1 ring-brand-500/10'
+            : 'border-line'
+        }
+      `}
+    >
+      {/* --------------------------------------------------------------
+          INFORMACIÓN
+      -------------------------------------------------------------- */}
+
       <div className="flex items-start gap-3">
-        {/* Icono */}
         <div
-          className="
-            flex h-11 w-11 shrink-0 items-center justify-center
-            rounded-xl bg-brand-500/10 text-brand-600
-            dark:text-brand-400
-          "
+          className={`
+            flex
+            h-11
+            w-11
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            ${
+              seleccionado
+                ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                : 'bg-surface-2 text-muted'
+            }
+          `}
         >
           <Croissant className="h-5 w-5" />
         </div>
 
-        {/* Nombre */}
-        <div className="min-w-0 flex-1 pt-0.5">
+        <div className="min-w-0 flex-1">
           <p className="line-clamp-2 text-sm font-semibold text-ink">
-            {item.nombreProducto}
+            {producto.nombreProducto}
           </p>
 
-          <p className="mt-0.5 text-xs text-muted">
+          {producto.nombreCategoria && (
+            <p className="mt-1 text-xs text-muted">
+              {producto.nombreCategoria}
+            </p>
+          )}
+        </div>
+
+        {/* Estado */}
+        {seleccionado && (
+          <div
+            className="
+              shrink-0
+              rounded-full
+              bg-brand-500/10
+              px-2.5
+              py-1
+              text-[11px]
+              font-bold
+              text-brand-600
+              dark:text-brand-400
+            "
+          >
+            {cantidad}
+          </div>
+        )}
+      </div>
+
+      {/* --------------------------------------------------------------
+          INFORMACIÓN DE PRODUCCIÓN
+      -------------------------------------------------------------- */}
+
+      {producto.tipoProduccion && (
+        <div className="mt-3 flex items-center gap-2">
+          <span className="rounded-lg bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted">
+            {producto.tipoProduccion}
+          </span>
+
+          {producto.unidadesPorBandeja &&
+            producto.tipoProduccion ===
+              'bandejas' && (
+              <span className="text-[11px] text-muted">
+                {producto.unidadesPorBandeja}{' '}
+                unidades/bandeja
+              </span>
+            )}
+        </div>
+      )}
+
+      {/* --------------------------------------------------------------
+          CANTIDAD
+      -------------------------------------------------------------- */}
+
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold text-muted">
             Cantidad
+          </p>
+
+          <p className="text-[11px] text-muted">
+            {seleccionado
+              ? 'Incluido en la orden'
+              : 'No incluido'}
           </p>
         </div>
 
-        {/* Eliminar */}
-        <button
-          type="button"
-          aria-label={`Eliminar ${item.nombreProducto}`}
-          title="Eliminar producto"
-          disabled={disabled}
-          onClick={onRemove}
-          className="
-            flex h-9 w-9 shrink-0 items-center justify-center
-            rounded-xl text-muted transition-colors
-            hover:bg-danger-500/10
-            hover:text-danger-600
-            disabled:cursor-not-allowed
-            disabled:opacity-40
-            dark:hover:text-danger-400
-          "
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Cantidad */}
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <span className="text-xs font-medium text-muted">
-          Unidades
-        </span>
-
         <CantidadControl
-          cantidad={item.cantidad}
+          cantidad={cantidad}
           disabled={disabled}
           onChange={onCantidadChange}
         />
@@ -287,35 +690,26 @@ function ProductoSeleccionado({
    CONTROL DE CANTIDAD
    ========================================================================== */
 
-function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
+function CantidadControl({
+  cantidad,
+  onChange,
+  disabled,
+}: {
+  cantidad: number;
   onChange: (cantidad: number) => void;
   disabled?: boolean;
 }) {
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] =
+    useState(false);
 
   /*
-   * Cuando el usuario entra al input y la cantidad es 0,
-   * mostramos el campo vacío para que pueda escribir directamente.
+   * Si la cantidad es 0 y el usuario toca el input,
+   * mostramos vacío para que pueda escribir directamente.
    */
-  const mostrarCantidad = focused && cantidad === 0
-    ? ''
-    : cantidad;
-
-  function handleFocus() {
-    setFocused(true);
-  }
-
-  function handleBlur() {
-    setFocused(false);
-
-    /*
-     * Una cantidad 0 o vacía no es válida al terminar de editar.
-     * La normalizamos a 0.
-     */
-    if (!Number.isFinite(cantidad) || cantidad <= 0) {
-      onChange(0);
-    }
-  }
+  const mostrarCantidad =
+    focused && cantidad === 0
+      ? ''
+      : cantidad;
 
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -323,8 +717,7 @@ function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
     const rawValue = e.target.value;
 
     /*
-     * Permitir que el usuario deje el campo vacío
-     * mientras está escribiendo.
+     * Campo vacío mientras escribe.
      */
     if (rawValue === '') {
       onChange(0);
@@ -333,27 +726,59 @@ function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
 
     const parsed = Number(rawValue);
 
-    if (!Number.isNaN(parsed) && parsed >= 0) {
-      onChange(parsed);
+    if (
+      Number.isFinite(parsed) &&
+      parsed >= 0
+    ) {
+      onChange(Math.floor(parsed));
     }
+  }
+
+  function disminuir() {
+    if (disabled) return;
+
+    onChange(Math.max(0, cantidad - 1));
+  }
+
+  function aumentar() {
+    if (disabled) return;
+
+    onChange(cantidad + 1);
   }
 
   return (
     <div
       className="
-        flex items-center rounded-xl border border-line
-        bg-surface-2 p-1
+        flex
+        shrink-0
+        items-center
+        rounded-xl
+        border
+        border-line
+        bg-surface-2
+        p-1
       "
     >
-      {/* Disminuir */}
+      {/* ------------------------------------------------------------
+          MENOS
+      ------------------------------------------------------------- */}
+
       <button
         type="button"
         aria-label="Disminuir cantidad"
-        disabled={disabled || cantidad <= 1}
-        onClick={() => onChange(Math.max(1, cantidad - 1))}
+        disabled={
+          disabled || cantidad <= 0
+        }
+        onClick={disminuir}
         className="
-          flex h-11 w-11 items-center justify-center
-          rounded-lg text-ink transition-colors
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-lg
+          text-ink
+          transition-colors
           hover:bg-surface
           active:scale-95
           disabled:cursor-not-allowed
@@ -363,40 +788,55 @@ function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
         <Minus className="h-5 w-5" />
       </button>
 
-      {/* Input */}
+      {/* ------------------------------------------------------------
+          INPUT
+      ------------------------------------------------------------- */}
+
       <input
         type="number"
-        min={1}
+        min={0}
         inputMode="numeric"
         value={mostrarCantidad}
         disabled={disabled}
         aria-label="Cantidad"
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        onFocus={() =>
+          setFocused(true)
+        }
+        onBlur={() =>
+          setFocused(false)
+        }
         onChange={handleInputChange}
         onWheel={(e) => {
           /*
-           * Evita que el scroll del mouse/touchpad
-           * modifique accidentalmente la cantidad.
+           * IMPORTANTE:
+           * evita que el scroll modifique la cantidad.
            */
           e.currentTarget.blur();
         }}
         onKeyDown={(e) => {
           /*
-           * Evita valores decimales.
+           * Solo cantidades enteras.
            */
           if (
             e.key === '.' ||
             e.key === ',' ||
             e.key === 'e' ||
+            e.key === 'E' ||
             e.key === '-'
           ) {
             e.preventDefault();
           }
         }}
         className="
-          h-11 w-14 border-0 bg-transparent
-          p-0 text-center text-base font-bold text-ink
+          h-11
+          w-14
+          border-0
+          bg-transparent
+          p-0
+          text-center
+          text-base
+          font-bold
+          text-ink
           outline-none
           [appearance:textfield]
           [&::-webkit-inner-spin-button]:appearance-none
@@ -404,15 +844,24 @@ function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
         "
       />
 
-      {/* Aumentar */}
+      {/* ------------------------------------------------------------
+          MÁS
+      ------------------------------------------------------------- */}
+
       <button
         type="button"
         aria-label="Aumentar cantidad"
         disabled={disabled}
-        onClick={() => onChange(cantidad + 1)}
+        onClick={aumentar}
         className="
-          flex h-11 w-11 items-center justify-center
-          rounded-lg text-ink transition-colors
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-lg
+          text-ink
+          transition-colors
           hover:bg-surface
           active:scale-95
           disabled:cursor-not-allowed
@@ -421,256 +870,6 @@ function CantidadControl({cantidad, onChange, disabled,}: { cantidad: number;
       >
         <Plus className="h-5 w-5" />
       </button>
-    </div>
-  );
-}
-
-/* ==========================================================================
-   MODAL DE PRODUCTOS
-   ========================================================================== */
-
-function SelectorProductosModal({
-  productos,
-  isLoading,
-  idsExcluidos,
-  disabled,
-  onSelect,
-  onClose,
-}: {
-  productos: ProductoConPrecio[] | undefined;
-  isLoading: boolean;
-  idsExcluidos: Set<number>;
-  disabled?: boolean;
-  onSelect: (producto: ProductoConPrecio) => void;
-  onClose: () => void;
-}) {
-  const [search, setSearch] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    }
-
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener(
-        'keydown',
-        handleEscape,
-      );
-    };
-  }, [onClose]);
-
-  const disponibles = useMemo(() => {
-    if (!productos) return [];
-
-    return productos.filter(
-      (producto) =>
-        !idsExcluidos.has(producto.idProducto),
-    );
-  }, [productos, idsExcluidos]);
-
-  const filtrados = useMemo(() => {
-    const term = search.trim().toLowerCase();
-
-    if (!term) return disponibles;
-
-    return disponibles.filter((producto) =>
-      producto.nombreProducto
-        .toLowerCase()
-        .includes(term),
-    );
-  }, [disponibles, search]);
-
-  function handleSelect(producto: ProductoConPrecio) {
-    onSelect(producto);
-    setSearch('');
-  }
-
-  return (
-    <div
-      className="
-        fixed inset-0 z-50 flex items-end justify-center
-        bg-black/40 p-0 backdrop-blur-[2px]
-        sm:items-center sm:p-4
-      "
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        className="
-          flex max-h-[90vh] w-full flex-col overflow-hidden
-          rounded-t-3xl bg-surface shadow-2xl
-          sm:max-w-lg sm:rounded-3xl
-        "
-      >
-        {/* Header */}
-        <div className="flex items-center gap-3 border-b border-line px-5 py-4">
-          <div
-            className="
-              flex h-10 w-10 shrink-0 items-center justify-center
-              rounded-xl bg-brand-500/10
-              text-brand-600 dark:text-brand-400
-            "
-          >
-            <Croissant className="h-5 w-5" />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <h2 className="text-base font-semibold text-ink">
-              Agregar producto
-            </h2>
-
-            <p className="text-xs text-muted">
-              Selecciona un producto de la lista
-            </p>
-          </div>
-
-          <button
-            type="button"
-            aria-label="Cerrar"
-            onClick={onClose}
-            className="
-              flex h-10 w-10 shrink-0 items-center justify-center
-              rounded-xl text-muted transition-colors
-              hover:bg-surface-2 hover:text-ink
-            "
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Buscador */}
-        <div className="border-b border-line px-5 py-4">
-          <div className="relative">
-            <Search
-              className="
-                pointer-events-none absolute left-4 top-1/2
-                h-5 w-5 -translate-y-1/2 text-muted
-              "
-            />
-
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Buscar producto..."
-              value={search}
-              disabled={disabled || isLoading}
-              onChange={(e) => setSearch(e.target.value)}
-              className="
-                input h-12 w-full rounded-xl pl-11 text-sm
-              "
-            />
-          </div>
-        </div>
-
-        {/* Lista */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div
-                className="
-                  h-8 w-8 animate-spin rounded-full
-                  border-2 border-line border-t-brand-500
-                "
-              />
-
-              <p className="mt-3 text-sm text-muted">
-                Cargando productos...
-              </p>
-            </div>
-          ) : filtrados.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <div
-                className="
-                  mx-auto flex h-12 w-12 items-center
-                  justify-center rounded-full bg-surface-2
-                "
-              >
-                <Search className="h-5 w-5 text-muted" />
-              </div>
-
-              <p className="mt-3 text-sm font-medium text-ink">
-                {disponibles.length === 0
-                  ? 'Ya agregaste todos los productos'
-                  : 'No encontramos productos'}
-              </p>
-
-              {disponibles.length > 0 && (
-                <p className="mt-1 text-xs text-muted">
-                  Prueba con otro nombre.
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filtrados.map((producto) => (
-                <button
-                  key={producto.idProducto}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleSelect(producto)}
-                  className="
-                    flex min-h-[64px] w-full items-center gap-3
-                    rounded-2xl border border-line bg-surface
-                    px-4 py-3 text-left
-                    transition-all
-                    hover:border-brand-500/40
-                    hover:bg-brand-500/5
-                    active:scale-[0.99]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
-                >
-                  <div
-                    className="
-                      flex h-10 w-10 shrink-0 items-center
-                      justify-center rounded-xl
-                      bg-surface-2 text-muted
-                    "
-                  >
-                    <Croissant className="h-4 w-4" />
-                  </div>
-
-                  <span className="min-w-0 flex-1 text-sm font-medium text-ink">
-                    {producto.nombreProducto}
-                  </span>
-
-                  <div
-                    className="
-                      flex h-9 w-9 shrink-0 items-center
-                      justify-center rounded-full
-                      bg-brand-500/10 text-brand-600
-                      dark:text-brand-400
-                    "
-                  >
-                    <Plus className="h-4 w-4" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-line px-5 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-secondary w-full !py-3"
-          >
-            Listo
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
