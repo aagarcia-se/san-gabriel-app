@@ -66,24 +66,10 @@ export const menuSchema: MenuEntry[] = [
     items: [
       {
         type: 'link',
-        to: '/stock-productos',
-        label: 'Control de stock',
+        to: '/inventarios',
+        label: 'Inventarios',
         icon: Package,
         rutaAcceso: '/stock-productos',
-      },
-      {
-        type: 'link',
-        to: '/descuento-stock',
-        label: 'Descuento de stock',
-        icon: PackageMinus,
-        rutaAcceso: '/descuento-stock',
-      },
-      {
-        type: 'link',
-        to: '/traslados-productos',
-        label: 'Traslados',
-        icon: ArrowLeftRight,
-        rutaAcceso: '/traslados-productos',
       },
     ],
   },
