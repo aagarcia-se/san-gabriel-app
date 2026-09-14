@@ -96,8 +96,8 @@ export const menuSchema: MenuEntry[] = [
   },
   {
     type: 'link',
-    to: '/pedido-especial',
-    label: 'Pedidos especiales',
+    to: '/ordenes-especiales',
+    label: 'Ordenes especiales',
     icon: Gift,
     rutaAcceso: '/pedido-especial',
   },

@@ -76,4 +76,11 @@ export const queryKeys = {
     consumoIngredientes: (idOrdenProduccion: number) =>
       [...queryKeys.ordenesProduccion.all, 'consumoIngredientes', idOrdenProduccion] as const,
   },
+  ordenesEspeciales: {
+    all: ['ordenesEspeciales'] as const,
+    list: (idRol: number, idSucursal: number) =>
+      [...queryKeys.ordenesEspeciales.all, 'list', idRol, idSucursal] as const,
+    detail: (idOrdenEspecial: number) =>
+      [...queryKeys.ordenesEspeciales.all, 'detail', idOrdenEspecial] as const,
+  },
 };

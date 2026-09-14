@@ -39,6 +39,9 @@ import { EncuestaDetallePage } from '@/features/encuestas/page/EncuestaDetallePa
 import { OrdenesProduccionPage } from '@/features/ordenesproduccion/page/OrdenesProduccionPage';
 import { DetalleOrdenProduccionPage } from '@/features/ordenesproduccion/page/DetalleOrdenProduccionPage';
 import { CrearOrdenProduccionPage } from '@/features/ordenesproduccion/page/CrearOrdenProduccionPage';
+import { OrdenesEspecialesPage } from '@/features/ordenesespeciales/page/OrdenesEspecialesPage';
+import { CrearOrdenEspecialPage } from '@/features/ordenesespeciales/page/CrearOrdenEspecialPage';
+import { EditarOrdenEspecialPage } from '@/features/ordenesespeciales/page/EditarOrdenEspecialPage';
 
 export function AppRoutes() {
   return (
@@ -302,6 +305,30 @@ export function AppRoutes() {
                     </RequirePermission>
                   }
                 />
+                <Route
+                  path="/ordenes-especiales"
+                  element={
+                    <RequirePermission ruta="/pedido-especial">
+                      <OrdenesEspecialesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/ordenes-especiales/nuevo"
+                  element={
+                    <RequirePermission ruta="/pedido-especial">
+                      <CrearOrdenEspecialPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="/ordenes-especiales/:idOrdenEspecial/editar"
+                  element={
+                    <RequirePermission ruta="/pedido-especial">
+                      <EditarOrdenEspecialPage />
+                    </RequirePermission>
+                  }
+/>
                 {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
                     RequirePermission con la misma rutaAcceso del permiso.
                     Así, aunque el usuario escriba la URL directamente,
