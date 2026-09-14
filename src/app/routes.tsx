@@ -55,10 +55,13 @@ const OrdenesProduccionPage = lazy(() => import('@/features/ordenesproduccion/pa
 const CrearOrdenProduccionPage = lazy(() => import('@/features/ordenesproduccion/page/CrearOrdenProduccionPage').then((m) => ({ default: m.CrearOrdenProduccionPage })));
 const DetalleOrdenProduccionPage = lazy(() => import('@/features/ordenesproduccion/page/DetalleOrdenProduccionPage').then((m) => ({ default: m.DetalleOrdenProduccionPage })));
 
-const OrdenesEspecialesPage = lazy(() => import('@/features/ordenesespeciales/page/OrdenesEspecialesPage').then((m) => ({ default: m.OrdenesEspecialesPage })));
-const CrearOrdenEspecialPage = lazy(() => import('@/features/ordenesespeciales/page/CrearOrdenEspecialPage').then((m) => ({ default: m.CrearOrdenEspecialPage })));
-const EditarOrdenEspecialPage = lazy(() => import('@/features/ordenesespeciales/page/EditarOrdenEspecialPage').then((m) => ({ default: m.EditarOrdenEspecialPage })));
-const DetalleOrdenEspecialPage = lazy(() => import('@/features/ordenesespeciales/page/DetalleOrdenEspecialPage').then((m) => ({ default: m.DetalleOrdenEspecialPage })));
+const OrdenesEspecialesPage      = lazy(() => import('@/features/ordenesespeciales/page/OrdenesEspecialesPage').then((m) => ({ default: m.OrdenesEspecialesPage })));
+const CrearOrdenEspecialPage     = lazy(() => import('@/features/ordenesespeciales/page/CrearOrdenEspecialPage').then((m) => ({ default: m.CrearOrdenEspecialPage })));
+const EditarOrdenEspecialPage    = lazy(() => import('@/features/ordenesespeciales/page/EditarOrdenEspecialPage').then((m) => ({ default: m.EditarOrdenEspecialPage })));
+const DetalleOrdenEspecialPage   = lazy(() => import('@/features/ordenesespeciales/page/DetalleOrdenEspecialPage').then((m) => ({ default: m.DetalleOrdenEspecialPage })));
+
+const InventariosSucursalesPage  = lazy(() => import('@/features/inventarios/page/InventariosSucursalesPage').then((m) => ({ default: m.InventariosSucursalesPage })));
+const InventarioSucursalPage     = lazy(() => import('@/features/inventarios/page/InventarioSucursalPage').then((m) => ({ default: m.InventarioSucursalPage })));
 
 export function AppRoutes() {
   return (
@@ -89,7 +92,7 @@ export function AppRoutes() {
                   {/* Pantallas de grupo: un click desde el Sidebar/BottomNav
                       lleva directo aquí, mostrando las sub-opciones de esa
                       sección como tarjetas (sin desplegable). */}
-                  <Route path="/inventarios" element={<MenuGroupPage to="/inventarios" />} />
+                {/*<Route path="/inventarios" element={<MenuGroupPage to="/inventarios" />} />*/}
                   <Route path="/configuraciones" element={<MenuGroupPage to="/configuraciones" />} />
 
                   <Route
@@ -352,6 +355,22 @@ export function AppRoutes() {
                     element={
                       <RequirePermission ruta="/pedido-especial">
                         <DetalleOrdenEspecialPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="/inventarios"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <InventariosSucursalesPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="/inventarios/:idSucursal"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <InventarioSucursalPage />
                       </RequirePermission>
                     }
                   />

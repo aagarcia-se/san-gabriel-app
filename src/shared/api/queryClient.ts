@@ -83,4 +83,9 @@ export const queryKeys = {
     detail: (idOrdenEspecial: number) =>
       [...queryKeys.ordenesEspeciales.all, 'detail', idOrdenEspecial] as const,
   },
+  inventarios: {
+    all: ['inventarios'] as const,
+    stockGeneral: (idSucursal: number, fecha: string) =>
+      [...queryKeys.inventarios.all, 'stockGeneral', idSucursal, fecha] as const,
+  },
 };
