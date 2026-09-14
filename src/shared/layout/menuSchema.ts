@@ -3,8 +3,6 @@ import {
   Home,
   LayoutDashboard,
   Package,
-  PackageMinus,
-  ArrowLeftRight,
   ClipboardList,
   Gift,
   ShoppingCart,
