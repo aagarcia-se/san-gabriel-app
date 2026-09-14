@@ -799,15 +799,15 @@ function CantidadControl({
         }
       }}
       className="
-        h-10
-        w-15
+        h-14
+        w-full
         rounded-xl
         border
         border-line
         bg-surface-2
         p-0
         text-center
-        text-3xl
+        text-2xl
         font-bold
         text-ink
         outline-none
