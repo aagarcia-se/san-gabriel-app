@@ -42,6 +42,7 @@ import { CrearOrdenProduccionPage } from '@/features/ordenesproduccion/page/Crea
 import { OrdenesEspecialesPage } from '@/features/ordenesespeciales/page/OrdenesEspecialesPage';
 import { CrearOrdenEspecialPage } from '@/features/ordenesespeciales/page/CrearOrdenEspecialPage';
 import { EditarOrdenEspecialPage } from '@/features/ordenesespeciales/page/EditarOrdenEspecialPage';
+import { DetalleOrdenEspecialPage } from '@/features/ordenesespeciales/page/DetalleOrdenEspecialPage';
 
 export function AppRoutes() {
   return (
@@ -328,7 +329,15 @@ export function AppRoutes() {
                       <EditarOrdenEspecialPage />
                     </RequirePermission>
                   }
-/>
+                />
+                <Route
+                  path="/ordenes-especiales/:idOrdenEspecial"
+                  element={
+                    <RequirePermission ruta="/pedido-especial">
+                      <DetalleOrdenEspecialPage />
+                    </RequirePermission>
+                  }
+                />
                 {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
                     RequirePermission con la misma rutaAcceso del permiso.
                     Así, aunque el usuario escriba la URL directamente,

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, Pencil, Phone, Plus, Search, Trash2 } from 'lucide-react';
+import { Eye, Gift, Pencil, Phone, Plus, Search, Trash2 } from 'lucide-react';
 import { useOrdenesEspeciales } from '../api/useOrdenesEspeciales';
 import { useEliminarOrdenEspecial } from '../api/useOrdenEspecialMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { EstadoEntregaBadge } from '../components/EstadoEntregaBadge';
 import { Spinner } from '@/shared/ui/Spinner';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -39,7 +40,7 @@ export function OrdenesEspecialesPage() {
     setActionError(undefined);
     eliminar.mutate(ordenAEliminar.idOrdenEspecial, {
       onSuccess: () => setOrdenAEliminar(null),
-      onError: (err : unknown) => {
+      onError: (err: unknown) => {
         setActionError((err as ApiError).message ?? 'No se pudo eliminar la orden.');
       },
     });
@@ -111,6 +112,7 @@ export function OrdenesEspecialesPage() {
                   <th className="px-4 py-3 font-medium">Sucursal</th>
                   <th className="px-4 py-3 font-medium">Entrega</th>
                   <th className="px-4 py-3 font-medium">A producir</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
@@ -122,6 +124,9 @@ export function OrdenesEspecialesPage() {
                     <td className="px-4 py-3 text-muted">{orden.sucursalEntrega}</td>
                     <td className="px-4 py-3 text-muted">{orden.fechaEntrega}</td>
                     <td className="px-4 py-3 text-muted">{orden.fechaAProducir}</td>
+                    <td className="px-4 py-3">
+                      <EstadoEntregaBadge fechaEntrega={orden.fechaEntrega} />
+                    </td>
                     <td className="px-4 py-3">
                       <RowActions
                         orden={orden}
@@ -172,6 +177,14 @@ function RowActions({ orden, disabled, onEliminar }: RowActionsProps) {
   return (
     <div className="flex items-center justify-end gap-1">
       <Link
+        to={`/ordenes-especiales/${orden.idOrdenEspecial}`}
+        aria-label="Ver detalle"
+        title="Ver detalle"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+      >
+        <Eye className="h-4 w-4" />
+      </Link>
+      <Link
         to={`/ordenes-especiales/${orden.idOrdenEspecial}/editar`}
         aria-label="Editar"
         title="Editar"
@@ -204,31 +217,34 @@ function OrdenCard({
 }) {
   return (
     <div className="card">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
-            <Gift className="h-5 w-5" />
+      <Link to={`/ordenes-especiales/${orden.idOrdenEspecial}`} className="block">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
+              <Gift className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-ink">{orden.nombreCliente}</p>
+              <p className="flex items-center gap-1 truncate text-xs text-muted">
+                <Phone className="h-3 w-3 shrink-0" />
+                {orden.telefonoCliente}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-ink">{orden.nombreCliente}</p>
-            <p className="flex items-center gap-1 truncate text-xs text-muted">
-              <Phone className="h-3 w-3 shrink-0" />
-              {orden.telefonoCliente}
-            </p>
-          </div>
+          <EstadoEntregaBadge fechaEntrega={orden.fechaEntrega} />
         </div>
-      </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 border-t border-line pt-3 text-xs text-muted">
-        <div>
-          <p className="text-muted">Sucursal</p>
-          <p className="text-ink">{orden.sucursalEntrega}</p>
+        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-line pt-3 text-xs text-muted">
+          <div>
+            <p className="text-muted">Sucursal</p>
+            <p className="text-ink">{orden.sucursalEntrega}</p>
+          </div>
+          <div>
+            <p className="text-muted">Entrega</p>
+            <p className="text-ink">{orden.fechaEntrega}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-muted">Entrega</p>
-          <p className="text-ink">{orden.fechaEntrega}</p>
-        </div>
-      </div>
+      </Link>
 
       <div className="mt-3 flex items-center justify-end gap-1 border-t border-line pt-3">
         <RowActions orden={orden} disabled={disabled} onEliminar={onEliminar} />
