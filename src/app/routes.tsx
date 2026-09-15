@@ -62,6 +62,7 @@ const DetalleOrdenEspecialPage   = lazy(() => import('@/features/ordenesespecial
 
 const InventariosSucursalesPage  = lazy(() => import('@/features/inventarios/page/InventariosSucursalesPage').then((m) => ({ default: m.InventariosSucursalesPage })));
 const InventarioSucursalPage     = lazy(() => import('@/features/inventarios/page/InventarioSucursalPage').then((m) => ({ default: m.InventarioSucursalPage })));
+const IngresarExistenciasPage = lazy(() => import('@/features/inventarios/page/IngresarExistenciasPage').then((m) => ({ default: m.IngresarExistenciasPage })));
 
 export function AppRoutes() {
   return (
@@ -371,6 +372,14 @@ export function AppRoutes() {
                     element={
                       <RequirePermission ruta="/stock-productos">
                         <InventarioSucursalPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="/inventarios/:idSucursal/ingresar"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <IngresarExistenciasPage />
                       </RequirePermission>
                     }
                   />
