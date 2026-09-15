@@ -54,7 +54,7 @@ export type TipoDescuento = 'MAYOREO' | 'MAL ESTADO' | 'CORRECCION';
 export type TurnoDescuento = 'AM' | 'PM';
 
 export interface DescuentoInfoPayload {
-  idSucursal: string;
+  idSucursal: number;
   idUsuario: number;
   tipoDescuento: TipoDescuento;
   descuentoTurno: TurnoDescuento;
@@ -66,7 +66,7 @@ export interface DetalleDescuentoItem {
   idProducto: number;
   controlarStock: 0 | 1;
   controlarStockDiario: 0 | 1;
-  stockADescontar: string;
+  stockADescontar: number;
   fechaDescuento: string;
 }
 

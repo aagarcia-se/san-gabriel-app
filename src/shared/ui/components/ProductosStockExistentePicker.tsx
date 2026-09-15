@@ -654,8 +654,19 @@ function ProductoCard({
       -------------------------------------------------------------- */}
 
       <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
-        <span className="text-xs font-semibold text-muted">Existencia</span>
-        <span className="text-sm font-bold text-ink">
+        <span className="text-sm font-semibold text-muted">Existencia</span>
+        <span
+          className="
+            rounded-full
+            bg-success-500/10
+            px-3
+            py-1
+            text-sm
+            font-bold
+            text-success-600
+            dark:text-success-400
+          "
+        >
           {producto.cantidadExistente}
         </span>
       </div>

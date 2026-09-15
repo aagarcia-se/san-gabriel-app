@@ -77,7 +77,7 @@ export function DescontarExistenciasPage() {
 
     const payload: DescontarStockRequest = {
       descuentoInfo: {
-        idSucursal: String(idSucursal),
+        idSucursal,
         idUsuario,
         tipoDescuento,
         descuentoTurno: turno,
@@ -88,7 +88,7 @@ export function DescontarExistenciasPage() {
         idProducto: item.idProducto,
         controlarStock: item.controlarStock,
         controlarStockDiario: item.controlarStockDiario,
-        stockADescontar: String(item.cantidad),
+        stockADescontar: item.cantidad,
         fechaDescuento: ahora,
       })),
     };
