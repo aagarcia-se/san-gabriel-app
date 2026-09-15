@@ -658,12 +658,12 @@ function ProductoCard({
         <span
           className="
             rounded-full
-            bg-success-500/10
+            bg-success-500/15
             px-3
             py-1
             text-sm
             font-bold
-            text-success-600
+            text-success-700
             dark:text-success-400
           "
         >
