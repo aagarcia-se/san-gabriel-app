@@ -1,6 +1,8 @@
 import { httpClient } from '@/shared/api/httpClient';
 import type {
   ConsultarStockGeneralResponse,
+  DescontarStockRequest,
+  DescontarStockResponse,
   IngresarStockRequest,
   IngresarStockResponse,
 } from '../types/inventarios.types';
@@ -21,6 +23,16 @@ export async function ingresarStockProductos(
 ): Promise<IngresarStockResponse> {
   const { data } = await httpClient.post<IngresarStockResponse>(
     '/ingresar-stock-productos',
+    payload,
+  );
+  return data;
+}
+
+export async function descontarStock(
+  payload: DescontarStockRequest,
+): Promise<DescontarStockResponse> {
+  const { data } = await httpClient.post<DescontarStockResponse>(
+    '/descontar-stock',
     payload,
   );
   return data;
