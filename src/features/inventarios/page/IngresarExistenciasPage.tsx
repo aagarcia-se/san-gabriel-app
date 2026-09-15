@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { PackagePlus } from 'lucide-react';
-import { ProductoStockPicker, type ProductoStockCantidadItem } from '@/shared/ui/components/ProductoStockPicker';
+import { ProductoStockCantidadItem, ProductoStockPicker } from '@/shared/ui/components/ProductoStockPicker';
 import { useSucursales } from '@/features/sucursales/api/useSucursales';
 import { useIngresarStock } from '../api/useInventarioMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -23,7 +23,6 @@ export function IngresarExistenciasPage() {
   const [seleccionados, setSeleccionados] = useState<ProductoStockCantidadItem[]>([]);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState(false);
-  const productosSeccionRef = useRef<HTMLDivElement>(null);
 
   const ingresarStock = useIngresarStock();
 
@@ -58,7 +57,7 @@ export function IngresarExistenciasPage() {
           setSuccess(true);
           setSeleccionados([]);
         },
-        onError: (err: unknown) => {
+        onError: (err : unknown) => {
           setError((err as ApiError).message ?? 'No se pudo ingresar el stock.');
         },
       },
@@ -66,64 +65,61 @@ export function IngresarExistenciasPage() {
   }
 
   return (
-    <>
-      <div className="space-y-4 pb-4">
-        <PageHeader
-          title="Agregar existencias"
-          description={nombreSucursal ? `Sucursal: ${nombreSucursal}` : undefined}
-          backTo={`/inventarios/${idSucursal}`}
-        />
+    <div className="space-y-4 pb-4">
+      <PageHeader
+        title="Agregar existencias"
+        description={nombreSucursal ? `Sucursal: ${nombreSucursal}` : undefined}
+        backTo={`/inventarios/${idSucursal}`}
+      />
 
-        <ProductoStockPicker
-          idSucursal={idSucursal}
-          value={seleccionados}
-          onChange={setSeleccionados}
-          disabled={ingresarStock.isPending}
-          cantidadInicial={0}
-        />
+      <ProductoStockPicker
+        value={seleccionados}
+        onChange={setSeleccionados}
+        disabled={ingresarStock.isPending}
+        cantidadInicial={0}
+      />
 
-        {error && (
-          <Alert variant="danger" onDismiss={() => setError(undefined)}>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="danger" onDismiss={() => setError(undefined)}>
+          {error}
+        </Alert>
+      )}
 
-        {success && (
-          <Alert variant="success" onDismiss={() => setSuccess(false)} autoDismissMs={5000}>
-            Existencias ingresadas correctamente.
-          </Alert>
-        )}
+      {success && (
+        <Alert variant="success" onDismiss={() => setSuccess(false)} autoDismissMs={5000}>
+          Existencias ingresadas correctamente.
+        </Alert>
+      )}
 
-        <div className="sticky bottom-20 z-10 sm:bottom-4">
-          <div className="card flex flex-col gap-3 shadow-lg sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted">
-              {seleccionados.length === 0
-                ? 'Selecciona productos para ingresar existencias.'
-                : `${seleccionados.length} producto(s) listo(s) para guardar.`}
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => navigate(`/inventarios/${idSucursal}`)}
-                disabled={ingresarStock.isPending}
-                className="btn-secondary"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleGuardar}
-                disabled={ingresarStock.isPending || seleccionados.length === 0}
-                className="btn-primary"
-              >
-                {ingresarStock.isPending && <ButtonSpinner />}
-                <PackagePlus className="h-4 w-4" />
-                {ingresarStock.isPending ? 'Guardando…' : 'Guardar existencias'}
-              </button>
-            </div>
+      <div className="sticky bottom-20 z-10 sm:bottom-4">
+        <div className="card flex flex-col gap-3 shadow-lg sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted">
+            {seleccionados.length === 0
+              ? 'Selecciona productos para ingresar existencias.'
+              : `${seleccionados.length} producto(s) listo(s) para guardar.`}
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/inventarios/${idSucursal}`)}
+              disabled={ingresarStock.isPending}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleGuardar}
+              disabled={ingresarStock.isPending || seleccionados.length === 0}
+              className="btn-primary"
+            >
+              {ingresarStock.isPending && <ButtonSpinner />}
+              <PackagePlus className="h-4 w-4" />
+              {ingresarStock.isPending ? 'Guardando…' : 'Guardar existencias'}
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
