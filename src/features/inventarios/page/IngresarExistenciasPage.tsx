@@ -57,7 +57,7 @@ export function IngresarExistenciasPage() {
           setSuccess(true);
           setSeleccionados([]);
         },
-        onError: (err : unknown) => {
+        onError: (err: unknown) => {
           setError((err as ApiError).message ?? 'No se pudo ingresar el stock.');
         },
       },
@@ -79,18 +79,6 @@ export function IngresarExistenciasPage() {
         cantidadInicial={0}
       />
 
-      {error && (
-        <Alert variant="danger" onDismiss={() => setError(undefined)}>
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert variant="success" onDismiss={() => setSuccess(false)} autoDismissMs={5000}>
-          Existencias ingresadas correctamente.
-        </Alert>
-      )}
-
       <div className="sticky bottom-20 z-10 sm:bottom-4">
         <div className="card flex flex-col gap-3 shadow-lg sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted">
@@ -98,6 +86,19 @@ export function IngresarExistenciasPage() {
               ? 'Selecciona productos para ingresar existencias.'
               : `${seleccionados.length} producto(s) listo(s) para guardar.`}
           </p>
+
+          {error && (
+            <Alert variant="danger" onDismiss={() => setError(undefined)}>
+              {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert variant="success" onDismiss={() => setSuccess(false)} autoDismissMs={5000}>
+              Existencias ingresadas correctamente.
+            </Alert>
+          )}
+
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -105,7 +106,7 @@ export function IngresarExistenciasPage() {
               disabled={ingresarStock.isPending}
               className="btn-secondary"
             >
-              Cancelar
+              Regresar
             </button>
             <button
               type="button"
