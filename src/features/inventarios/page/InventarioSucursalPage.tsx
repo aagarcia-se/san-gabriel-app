@@ -168,9 +168,6 @@ export function InventarioSucursalPage() {
     categoriaSeleccionada,
   ]);
 
-  const totalProductos =
-    stock?.length ?? 0;
-
   const totalFiltrados =
     filtered.length;
 
