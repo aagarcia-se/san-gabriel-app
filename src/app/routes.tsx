@@ -64,6 +64,7 @@ const InventariosSucursalesPage  = lazy(() => import('@/features/inventarios/pag
 const InventarioSucursalPage     = lazy(() => import('@/features/inventarios/page/InventarioSucursalPage').then((m) => ({ default: m.InventarioSucursalPage })));
 const IngresarExistenciasPage = lazy(() => import('@/features/inventarios/page/IngresarExistenciasPage').then((m) => ({ default: m.IngresarExistenciasPage })));
 const DescontarExistenciasPage = lazy(() => import('@/features/inventarios/page/DescontarExistenciasPage').then((m) => ({ default: m.DescontarExistenciasPage })));
+const TrasladarExistenciasPage = lazy(() => import('@/features/inventarios/page/TrasladarExistenciasPage').then((m) => ({ default: m.TrasladarExistenciasPage })));
 
 export function AppRoutes() {
   return (
@@ -389,6 +390,14 @@ export function AppRoutes() {
                     element={
                       <RequirePermission ruta="/stock-productos">
                         <DescontarExistenciasPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="/inventarios/:idSucursal/trasladar"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <TrasladarExistenciasPage />
                       </RequirePermission>
                     }
                   />

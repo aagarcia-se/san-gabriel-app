@@ -5,6 +5,8 @@ import type {
   DescontarStockResponse,
   IngresarStockRequest,
   IngresarStockResponse,
+  RegistrarTrasladoRequest,
+  RegistrarTrasladoResponse,
 } from '../types/inventarios.types';
 
 export async function consultarStockGeneral(
@@ -33,6 +35,16 @@ export async function descontarStock(
 ): Promise<DescontarStockResponse> {
   const { data } = await httpClient.post<DescontarStockResponse>(
     '/descontar-stock',
+    payload,
+  );
+  return data;
+}
+
+export async function registrarTraslado(
+  payload: RegistrarTrasladoRequest,
+): Promise<RegistrarTrasladoResponse> {
+  const { data } = await httpClient.post<RegistrarTrasladoResponse>(
+    '/registrar-traslado',
     payload,
   );
   return data;

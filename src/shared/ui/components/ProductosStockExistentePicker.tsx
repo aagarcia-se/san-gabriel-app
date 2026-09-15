@@ -9,7 +9,7 @@ import { useStockGeneral } from '@/features/inventarios/api/useStockGeneral';
 import { CategoriaFilter } from '@/shared/ui/CategoriaFilter';
 // OJO: ajusta esta ruta si StockGeneralItem vive en otro archivo de tipos
 // en tu proyecto — es el mismo tipo que ya usas en InventarioSucursalPage.
-import type { StockGeneralItem } from '@/features/inventarios/types/inventarios.types';
+import type { StockGeneralItem, TipoProduccionStock } from '@/features/inventarios/types/inventarios.types';
 
 export interface ProductoStockItem {
   idProducto: number;
@@ -23,6 +23,7 @@ export interface ProductoStockItem {
    */
   controlarStock: 0 | 1;
   controlarStockDiario: 0 | 1;
+  tipoProduccion: TipoProduccionStock;
 }
 
 interface ProductosStockExistentePickerProps {
@@ -305,6 +306,8 @@ export function ProductosStockExistentePicker({
           producto.controlarStock,
         controlarStockDiario:
           producto.controlarStockDiario,
+        tipoProduccion:
+          producto.tipoProduccion,
       },
     ]);
   }

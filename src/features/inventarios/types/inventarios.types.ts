@@ -82,3 +82,40 @@ export interface DescuentoRegistrado {
 }
 
 export type DescontarStockResponse = WithPayload<'stockADescontar', DescuentoRegistrado>;
+
+/* ==========================================================================
+   TRASLADO DE STOCK ENTRE SUCURSALES
+   ========================================================================== */
+
+export interface TrasladoHeaderPayload {
+  idSucursalOrigen: number;
+  idSucursalDestino: number;
+  idUsuario: number;
+  fechaTraslado: string;
+}
+
+export interface TrasladoDetalleItem {
+  idProducto: number;
+  tipoProduccion: TipoProduccionStock;
+  controlarStock: 0 | 1;
+  controlarStockDiario: 0 | 1;
+  cantidadATrasladar: number;
+  fechaTraslado: string;
+}
+
+// OJO: la key "traladoHeader" (sin la "s" de "traslado") es tal cual la
+// espera tu API — no es un typo mío, es el nombre real del campo.
+export interface RegistrarTrasladoRequest {
+  traladoHeader: TrasladoHeaderPayload;
+  trasladoDetalle: TrasladoDetalleItem[];
+}
+
+export interface TrasladoRegistrado {
+  idTraslado: string;
+  idSucursalOrigen: number;
+  idSucursalDestino: number;
+  idUsuario: number;
+  fechaTraslado: string;
+}
+
+export type RegistrarTrasladoResponse = WithPayload<'resTraslado', TrasladoRegistrado>;
