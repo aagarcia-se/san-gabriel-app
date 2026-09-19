@@ -270,7 +270,7 @@ function VentaCard({
 
       <div className="mt-3 flex items-center justify-end gap-1 border-t border-line pt-3">
         <Link
-          to={`/ventas/${idSucursal}/${venta.idVenta}`}
+          to={`/ventas/${idSucursal}/detalle/${venta.idVenta}`}
           title="Ver detalle"
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
