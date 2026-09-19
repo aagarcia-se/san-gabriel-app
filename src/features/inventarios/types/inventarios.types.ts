@@ -119,3 +119,113 @@ export interface TrasladoRegistrado {
 }
 
 export type RegistrarTrasladoResponse = WithPayload<'resTraslado', TrasladoRegistrado>;
+
+/* ==========================================================================
+   HISTORIAL DE MOVIMIENTOS
+   ========================================================================== */
+
+export interface DescuentoListItem {
+  idDescuento: number;
+  idSucursal: number;
+  descuentoTurno: TurnoDescuento;
+  nombreSucursal: string;
+  idUsuario: number;
+  nombreUsuario: string;
+  tipoDescuento: TipoDescuento;
+  fechaDescuento: string;
+  fechaCreacion: string;
+  estado: string;
+}
+
+export type ConsultarDescuentosResponse = WithPayload<'descuentos', DescuentoListItem[]>;
+
+export interface TrasladoListItem {
+  idTraslado: number;
+  sucursalOrigen: string;
+  sucursalDestino: string;
+  usuarioResponsable: string;
+  fechaTraslado: string;
+}
+
+export type ConsultarTrasladosResponse = WithPayload<'traslados', TrasladoListItem[]>;
+
+// Vista unificada para el historial: ambos tipos de movimiento
+// normalizados a una sola forma, para poder mostrarlos mezclados
+// y ordenados por fecha en la misma lista.
+export type TipoMovimiento = 'descuento' | 'traslado';
+
+export interface MovimientoUnificado {
+  tipo: TipoMovimiento;
+  id: number;
+  fecha: string;
+  usuario: string;
+  /** Descuento: tipo + turno. Traslado: origen → destino. */
+  descripcion: string;
+  detalle: string;
+}
+
+export type CancelarDescuentoResponse = WithPayload<'gestionEliminada', number>;
+
+// OJO: la key "TraladaoElminado" viene así del backend (con typos y
+// mayúscula inicial) — no la corrijas aquí o dejará de leerse.
+export type EliminarTrasladoResponse = WithPayload<'TraladaoElminado', number>;
+
+
+/* ==========================================================================
+   DETALLE DE MOVIMIENTOS
+   ========================================================================== */
+
+   export interface TrasladoEncabezado {
+    idTraslado: number;
+    idSucursalOrigen: number;
+    sucursalOrigen: string;
+    idSucursalDestino: number;
+    sucursalDestino: string;
+    idUsuario: number;
+    usuarioResponsable: string;
+    fechaTraslado: string;
+  }
+  
+  export interface TrasladoDetalleLinea {
+    idTrasladoDetalle: number;
+    idProducto: number;
+    nombreProducto: string;
+    cantidadATrasladar: number;
+    controlarStock: 0 | 1;
+    controlarStockDiario: 0 | 1;
+  }
+  
+  export interface TrasladoDetalleCompleto {
+    encabezadoTraslado: TrasladoEncabezado;
+    detalle: TrasladoDetalleLinea[];
+  }
+  
+  export type ConsultarDetalleTrasladoResponse = WithPayload<'traslado', TrasladoDetalleCompleto>;
+  
+  export interface DescuentoEncabezado {
+    idDescuento: number;
+    idSucursal: number;
+    descuentoTurno: TurnoDescuento;
+    nombreSucursal: string;
+    idUsuario: number;
+    nombreUsuario: string;
+    tipoDescuento: TipoDescuento;
+    fechaDescuento: string;
+    estado: string;
+  }
+  
+  export interface DescuentoDetalleLinea {
+    idDetalleDescuento: number;
+    idProducto: number;
+    nombreProducto: string;
+    controlarStock: 0 | 1;
+    controlarStockDiario: 0 | 1;
+    unidadesDescontadas: number;
+  }
+  
+  export interface DescuentoDetalleCompleto {
+    encabezadoDescuento: DescuentoEncabezado;
+    detalleDescuento: DescuentoDetalleLinea[];
+  }
+  
+  export type ConsultarDetalleDescuentoResponse = WithPayload<'descuentoStock', DescuentoDetalleCompleto >;

@@ -87,5 +87,12 @@ export const queryKeys = {
     all: ['inventarios'] as const,
     stockGeneral: (idSucursal: number, fecha: string) =>
       [...queryKeys.inventarios.all, 'stockGeneral', idSucursal, fecha] as const,
+    descuentos: (idSucursal: number) =>
+      [...queryKeys.inventarios.all, 'descuentos', idSucursal] as const,
+    traslados: () => [...queryKeys.inventarios.all, 'traslados'] as const,
+    detalleTraslado: (idTraslado: number) =>
+      [...queryKeys.inventarios.all, 'detalleTraslado', idTraslado] as const,
+    detalleDescuento: (idDescuento: number) =>
+      [...queryKeys.inventarios.all, 'detalleDescuento', idDescuento] as const,
   },
 };

@@ -65,6 +65,11 @@ const InventarioSucursalPage     = lazy(() => import('@/features/inventarios/pag
 const IngresarExistenciasPage = lazy(() => import('@/features/inventarios/page/IngresarExistenciasPage').then((m) => ({ default: m.IngresarExistenciasPage })));
 const DescontarExistenciasPage = lazy(() => import('@/features/inventarios/page/DescontarExistenciasPage').then((m) => ({ default: m.DescontarExistenciasPage })));
 const TrasladarExistenciasPage = lazy(() => import('@/features/inventarios/page/TrasladarExistenciasPage').then((m) => ({ default: m.TrasladarExistenciasPage })));
+const HistorialMovimientosPage = lazy(() => import('@/features/inventarios/page/HistorialMovimientosPage').then((m) => ({ default: m.HistorialMovimientosPage })))
+const DetalleMovimientoPage = lazy(() => import('@/features/inventarios/page/DetalleMovimientoPage').then((m) => ({ default: m.DetalleMovimientoPage })));
+
+const VentasSucursalesPage = lazy(() => import('@/features/ventas/pages/VentasSucursalesPage').then((m) => ({ default: m.VentasSucursalesPage })));
+const VentaSucursalPage = lazy(() => import('@/features/ventas/pages/VentaSucursalPage').then((m) => ({ default: m.VentaSucursalPage })));
 
 export function AppRoutes() {
   return (
@@ -401,7 +406,39 @@ export function AppRoutes() {
                       </RequirePermission>
                     }
                   />
-                  {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
+                  <Route
+                    path="/inventarios/:idSucursal/historial"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <HistorialMovimientosPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                    path="/inventarios/:idSucursal/historial/:tipo/:idMovimiento"
+                    element={
+                      <RequirePermission ruta="/stock-productos">
+                        <DetalleMovimientoPage />
+                      </RequirePermission>
+                    }
+                  />
+                  <Route
+                      path="/ventas"
+                      element={
+                        <RequirePermission ruta="/ventas">
+                          <VentasSucursalesPage />
+                        </RequirePermission>
+                      }
+                    />
+                    <Route
+                      path="/ventas/:idSucursal"
+                      element={
+                        <RequirePermission ruta="/ventas">
+                          <VentaSucursalPage />
+                        </RequirePermission>
+                      }
+                    />
+                                      {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
                       RequirePermission con la misma rutaAcceso del permiso.
                       Así, aunque el usuario escriba la URL directamente,
                       solo entra si su rol realmente tiene ese permiso. */}
