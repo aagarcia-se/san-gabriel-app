@@ -70,7 +70,7 @@ const DetalleMovimientoPage = lazy(() => import('@/features/inventarios/page/Det
 
 const VentasSucursalesPage = lazy(() => import('@/features/ventas/pages/VentasSucursalesPage').then((m) => ({ default: m.VentasSucursalesPage })));
 const VentaSucursalPage = lazy(() => import('@/features/ventas/pages/VentaSucursalPage').then((m) => ({ default: m.VentaSucursalPage })));
-
+const VentaDetallePage = lazy(() => import('@/features/ventas/pages/VentaDetallePage').then((m) => ({ default: m.VentaDetallePage })));
 export function AppRoutes() {
   return (
     <Routes>
@@ -435,6 +435,14 @@ export function AppRoutes() {
                       element={
                         <RequirePermission ruta="/ventas">
                           <VentaSucursalPage />
+                        </RequirePermission>
+                      }
+                    />
+                    <Route
+                      path="/ventas/:idSucursal/detalle/:idVenta"
+                      element={
+                        <RequirePermission ruta="/ventas">
+                          <VentaDetallePage />
                         </RequirePermission>
                       }
                     />

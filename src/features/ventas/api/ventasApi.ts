@@ -1,5 +1,6 @@
 import { httpClient } from '@/shared/api/httpClient';
 import type {
+  ConsultarDetalleVentaResponse,
   ConsultarVentasPorSucursalResponse,
   EliminarVentaParams,
   EliminarVentaResponse,
@@ -10,6 +11,15 @@ export async function consultarVentasPorSucursal(
 ): Promise<ConsultarVentasPorSucursalResponse> {
   const { data } = await httpClient.get<ConsultarVentasPorSucursalResponse>(
     `/consultar-venta-por-sucursal/${idSucursal}`,
+  );
+  return data;
+}
+
+export async function consultarDetalleVenta(
+  idVenta: number,
+): Promise<ConsultarDetalleVentaResponse> {
+  const { data } = await httpClient.get<ConsultarDetalleVentaResponse>(
+    `/consultar-detalle-venta/${idVenta}`,
   );
   return data;
 }

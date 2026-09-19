@@ -177,9 +177,8 @@ export function VentaSucursalPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
-                          {/* TODO: implementar VentaDetallePage en esta ruta. */}
                           <Link
-                            to={`/ventas/${idSucursal}/${venta.idVenta}`}
+                            to={`/ventas/${idSucursal}/detalle/${venta.idVenta}`}
                             title="Ver detalle"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
                           >

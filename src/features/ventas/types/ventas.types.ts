@@ -30,3 +30,65 @@ export interface EliminarVentaResponse {
   status: number;
   message: string;
 }
+
+/* ==========================================================================
+   DETALLE DE VENTA
+   ========================================================================== */
+
+// Mismos campos que VentaItem, más "usuario" (el login) que el
+// encabezado del detalle sí incluye.
+export interface EncabezadoVentaDetalle {
+  idVenta: number;
+  idUsuario: number;
+  usuario: string;
+  nombreUsuario: string;
+  idSucursal: number;
+  ventaTurno: TurnoVenta;
+  nombreSucursal: string;
+  fechaVenta: string;
+  totalVenta: number;
+  estadoVenta: EstadoVenta;
+}
+
+export interface DetalleVentaProducto {
+  idDetalleVenta: number;
+  idVenta: number;
+  idProducto: number;
+  nombreProducto: string;
+  controlarStock: 0 | 1;
+  controlarStockDiario: 0 | 1;
+  cantidadVendida: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+}
+
+export interface DetalleIngresosVenta {
+  idIngreso: number;
+  idVenta: number;
+  montoTotalIngresado: number;
+  montoTotalGastos: number;
+  montoEsperado: number;
+  diferencia: number;
+  fechaIngreso: string;
+}
+
+// El array vino vacío en el ejemplo que compartiste, así que esta forma
+// es una suposición razonable — ajústala en cuanto veas un gasto real
+// en la respuesta.
+export interface DetalleGastoVenta {
+  idGasto: number;
+  idVenta: number;
+  concepto: string;
+  monto: number;
+  fechaGasto: string;
+}
+
+export interface VentaDetalleCompleta {
+  encabezadoVenta: EncabezadoVentaDetalle;
+  detalleVenta: DetalleVentaProducto[];
+  detalleIngresos: DetalleIngresosVenta;
+  detalleGastos: DetalleGastoVenta[];
+}
+
+export type ConsultarDetalleVentaResponse = WithPayload<'venta', VentaDetalleCompleta>;

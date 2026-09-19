@@ -98,5 +98,6 @@ export const queryKeys = {
   ventas: {
     all: ['ventas'] as const,
     list: (idSucursal: number) => [...queryKeys.ventas.all, 'list', idSucursal] as const,
+    detail: (idVenta: number) => [...queryKeys.ventas.all, 'detail', idVenta] as const,
   },
 };
