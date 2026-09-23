@@ -71,6 +71,8 @@ const DetalleMovimientoPage = lazy(() => import('@/features/inventarios/page/Det
 const VentasSucursalesPage = lazy(() => import('@/features/ventas/pages/VentasSucursalesPage').then((m) => ({ default: m.VentasSucursalesPage })));
 const VentaSucursalPage = lazy(() => import('@/features/ventas/pages/VentaSucursalPage').then((m) => ({ default: m.VentaSucursalPage })));
 const VentaDetallePage = lazy(() => import('@/features/ventas/pages/VentaDetallePage').then((m) => ({ default: m.VentaDetallePage })));
+const IngresoVentaWizard = lazy(() => import('@/features/ventas/pages/IngresoVentaWizard').then((m) => ({ default: m.IngresoVentaWizard })));
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -446,7 +448,15 @@ export function AppRoutes() {
                         </RequirePermission>
                       }
                     />
-                                      {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
+                    <Route
+                      path="/ventas/:idSucursal/nueva"
+                      element={
+                        <RequirePermission ruta="/ventas">
+                          <IngresoVentaWizard />
+                        </RequirePermission>
+                      }
+                    />
+                  {/* Patrón para cada módulo nuevo — SIEMPRE envuelto en
                       RequirePermission con la misma rutaAcceso del permiso.
                       Así, aunque el usuario escriba la URL directamente,
                       solo entra si su rol realmente tiene ese permiso. */}

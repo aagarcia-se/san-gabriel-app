@@ -1,3 +1,4 @@
+import { TipoProduccionStock } from '@/features/inventarios/types/inventarios.types';
 import type { WithPayload } from '@/shared/api/apiEnvelope';
 
 export type TurnoVenta = 'AM' | 'PM';
@@ -92,3 +93,56 @@ export interface VentaDetalleCompleta {
 }
 
 export type ConsultarDetalleVentaResponse = WithPayload<'venta', VentaDetalleCompleta>;
+
+export interface EncabezadoVentaRequest {
+  idOrdenProduccion: number | null;
+  idUsuario: number;
+  idSucursal: number;
+  ventaTurno: TurnoVenta;
+  fechaVenta: string;
+  fechaCreacion: string;
+  fechaYHoraVenta: string;
+}
+
+export interface DetalleVentaProductoRequest {
+  idProducto: number;
+  tipoProduccion: TipoProduccionStock;
+  controlarStock: 0 | 1;
+  controlarStockDiario: 0 | 1;
+  idCategoria: number;
+  fechaCreacion: string;
+  unidadesNoVendidas: number;
+}
+
+export interface DetalleIngresoRequest {
+  montoTotalIngresado: number;
+  fechaIngreso: string;
+}
+
+export interface DetalleGastoRequest {
+  detalleGasto: string;
+  subTotal: number;
+}
+
+export interface EncabezadoGastosDiariosRequest {
+  idUsuario: number;
+  montoTotalGasto: number;
+  fechaIngreso: string;
+}
+
+export interface GastosDiariosRequest {
+  encabezadoGastosDiarios: EncabezadoGastosDiariosRequest;
+  detalleGastosDiarios: DetalleGastoRequest[];
+}
+
+export interface IngresarVentaRequest {
+  encabezadoVenta: EncabezadoVentaRequest;
+  detalleVenta: DetalleVentaProductoRequest[];
+  detalleIngreso: DetalleIngresoRequest;
+  // null cuando no se registra ningún gasto en el turno — confirmar si
+  // el backend en cambio espera un objeto con detalleGastosDiarios: []
+  // en vez de null cuando no hay gastos.
+  gastosDiarios: GastosDiariosRequest | null;
+}
+
+export type IngresarVentaResponse = WithPayload<'idVenta', number>;

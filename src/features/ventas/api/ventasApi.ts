@@ -4,6 +4,8 @@ import type {
   ConsultarVentasPorSucursalResponse,
   EliminarVentaParams,
   EliminarVentaResponse,
+  IngresarVentaRequest,
+  IngresarVentaResponse,
 } from '../types/ventas.types';
 
 export async function consultarVentasPorSucursal(
@@ -30,5 +32,12 @@ export async function eliminarVenta(
   const { data } = await httpClient.delete<EliminarVentaResponse>('/eliminar-venta', {
     params,
   });
+  return data;
+}
+
+export async function ingresarVenta(
+  payload: IngresarVentaRequest,
+): Promise<IngresarVentaResponse> {
+  const { data } = await httpClient.post<IngresarVentaResponse>('/ingresar-venta', payload);
   return data;
 }
