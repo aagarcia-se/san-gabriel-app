@@ -25,6 +25,7 @@ export interface MenuLink {
   type: 'link';
   to: string;
   label: string;
+  mobileLabel: string;
   icon: LucideIcon;
   // rutaAcceso del permiso que habilita este link. Si se omite, el link
   // es de acceso libre para cualquier usuario con sesión (ej. "Inicio",
@@ -39,6 +40,7 @@ export interface MenuGroup {
   // desplegable — y esa pantalla muestra las tarjetas de sus items.
   to: string;
   label: string;
+  mobileLabel: string,
   icon: LucideIcon;
   items: MenuLink[];
 }
@@ -48,11 +50,17 @@ export type MenuEntry = MenuLink | MenuGroup;
 // Orden y agrupación del menú para toda la app (Sidebar, BottomNav, "Más").
 // Un solo lugar: cada módulo nuevo se agrega aquí, no en cada componente.
 export const menuSchema: MenuEntry[] = [
-  { type: 'link', to: '/inicio', label: 'Inicio', icon: Home },
+  { type: 'link',
+    to: '/inicio',
+    label: 'Inicio',
+    mobileLabel: 'Inicio',
+    icon: Home
+  },
   {
     type: 'link',
     to: '/dashboard',
     label: 'Dashboard',
+    mobileLabel: 'Dashboard',
     icon: LayoutDashboard,
     rutaAcceso: '/dashboard',
   },
@@ -60,12 +68,14 @@ export const menuSchema: MenuEntry[] = [
     type: 'group',
     to: '/inventarios',
     label: 'Inventarios',
+    mobileLabel: 'Dashboard',
     icon: Package,
     items: [
       {
         type: 'link',
         to: '/inventarios',
         label: 'Inventarios',
+        mobileLabel: 'Dashboard',
         icon: Package,
         rutaAcceso: '/stock-productos',
       },
@@ -75,6 +85,7 @@ export const menuSchema: MenuEntry[] = [
     type: 'link',
     to: '/ordenes-produccion',
     label: 'Órdenes de producción',
+    mobileLabel: 'O. Produccion',
     icon: ClipboardList,
     rutaAcceso: '/ordenes-produccion',
   },
@@ -82,6 +93,7 @@ export const menuSchema: MenuEntry[] = [
     type: 'link',
     to: '/ordenes-especiales',
     label: 'Ordenes especiales',
+    mobileLabel: 'O. Especiales',
     icon: Gift,
     rutaAcceso: '/pedido-especial',
   },
@@ -89,6 +101,7 @@ export const menuSchema: MenuEntry[] = [
     type: 'link',
     to: '/ventas',
     label: 'Ventas',
+    mobileLabel: 'Ventas',
     icon: ShoppingCart,
     rutaAcceso: '/ventas',
   },
@@ -96,6 +109,7 @@ export const menuSchema: MenuEntry[] = [
     type: 'link',
     to: '/reportes',
     label: 'Reportes',
+    mobileLabel: 'Reportes',
     icon: BarChart3,
     rutaAcceso: '/reportes',
   },
@@ -103,13 +117,20 @@ export const menuSchema: MenuEntry[] = [
     type: 'group',
     to: '/configuraciones',
     label: 'Configuraciones',
+    mobileLabel: 'Configuraciones',
     icon: Settings,
     items: [
-      { type: 'link', to: '/users', label: 'Usuarios', icon: Users, rutaAcceso: '/users' },
+      { type: 'link',
+        to: '/users',
+        label: 'Usuarios',
+        mobileLabel: 'Usuarios',
+        icon: Users,
+        rutaAcceso: '/users' },
       {
         type: 'link',
         to: '/users/roles',
         label: 'Roles',
+        mobileLabel: 'Roles',
         icon: ShieldCheck,
         rutaAcceso: '/users/roles',
       },
@@ -117,6 +138,7 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/sucursales',
         label: 'Sucursales',
+        mobileLabel: 'Sucursales',
         icon: Store,
         rutaAcceso: '/sucursales',
       },
@@ -124,6 +146,7 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/productos',
         label: 'Productos',
+        mobileLabel: 'Productos',
         icon: Croissant,
         rutaAcceso: '/productos',
       },
@@ -131,14 +154,20 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/recetas',
         label: 'Materia prima',
+        mobileLabel: 'Materia prima',
         icon: Wheat,
         rutaAcceso: '/config',
       },
-      { type: 'link', to: '/perfil', label: 'Mi perfil', icon: UserCog },
+      { type: 'link',
+        to: '/perfil',
+        label: 'Mi perfil',
+        mobileLabel: 'Mi perfil',
+        icon: UserCog },
       {
         type: 'link',
         to: '/encuestas',
         label: 'Encuestas',
+        mobileLabel: 'Encuestas',
         icon: ClipboardCheck,
         rutaAcceso: '/encuestas-config',
       },
@@ -146,6 +175,7 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/activar-fecha-produccion',
         label: 'Activar fecha de producción',
+        mobileLabel: 'Activar fecha de producción',
         icon: CalendarCheck,
         rutaAcceso: '/activar-fecha-produccion',
       },
@@ -153,6 +183,7 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/habilitar-notificaciones',
         label: 'Notificaciones',
+        mobileLabel: 'habilitar-notificaciones',
         icon: Bell,
         rutaAcceso: '/habilitar-notificaciones',
       },
@@ -160,6 +191,7 @@ export const menuSchema: MenuEntry[] = [
         type: 'link',
         to: '/categorias',
         label: 'Categorías',
+        mobileLabel: 'Categorías',
         icon: Tag,
         rutaAcceso: '/categorias',
       },
