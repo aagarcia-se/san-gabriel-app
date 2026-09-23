@@ -29,7 +29,7 @@ export interface IngredienteConsumido {
 
 export type ConsultarConsumoIngredientesResponse = WithPayload<'IngredientesConsumidos', IngredienteConsumido[]>;
 
-// --- Ingreso de orden por batch (CSV + encabezado) ---
+// --- Ingreso de orden por batch (xlsx + encabezado) ---
 // El backend recibe multipart/form-data: un archivo binario bajo la
 // clave "ordenProduccionBatch" y este objeto stringificado bajo la
 // clave "ordenHaader" (el nombre respeta el typo real del backend,
