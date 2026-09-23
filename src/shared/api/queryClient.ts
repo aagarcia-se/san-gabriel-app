@@ -100,4 +100,8 @@ export const queryKeys = {
     list: (idSucursal: number) => [...queryKeys.ventas.all, 'list', idSucursal] as const,
     detail: (idVenta: number) => [...queryKeys.ventas.all, 'detail', idVenta] as const,
   },
+  dashboard: {
+    all: ['dashboard'] as const,
+    data: () => [...queryKeys.dashboard.all, 'data'] as const,
+  },
 };

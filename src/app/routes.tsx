@@ -15,7 +15,7 @@ import { MenuGroupPage } from '@/shared/layout/MenuGroupPage';
 // propio chunk y solo se descarga cuando el usuario navega a esa ruta,
 // en vez de venir todas juntas en el bundle inicial.
 const InicioPage = lazy(() => import('@/features/inicio/pages/InicioPage').then((m) => ({ default: m.InicioPage })));
-const HomePage = lazy(() => import('@/features/home/pages/HomePage').then((m) => ({ default: m.HomePage })));
+const DashboardPage = lazy(() => import('@/features/home/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const PerfilPage = lazy(() => import('@/features/perfil/pages/PerfilPage').then((m) => ({ default: m.PerfilPage })));
 const MasPage = lazy(() => import('@/features/menu/pages/MasPage').then((m) => ({ default: m.MasPage })));
 
@@ -109,7 +109,7 @@ export function AppRoutes() {
                     path="/dashboard"
                     element={
                       <RequirePermission ruta="/dashboard">
-                        <HomePage />
+                        <DashboardPage />
                       </RequirePermission>
                     }
                   />
