@@ -4,8 +4,10 @@ import type {
   ConsultarVentasPorSucursalResponse,
   EliminarVentaParams,
   EliminarVentaResponse,
+  IngresarVentaBatchResponse,
   IngresarVentaRequest,
   IngresarVentaResponse,
+  VentaBatchPayload,
 } from '../types/ventas.types';
 
 export async function consultarVentasPorSucursal(
@@ -39,5 +41,21 @@ export async function ingresarVenta(
   payload: IngresarVentaRequest,
 ): Promise<IngresarVentaResponse> {
   const { data } = await httpClient.post<IngresarVentaResponse>('/ingresar-venta', payload);
+  return data;
+}
+
+export async function ingresarVentaBatch(
+  venta: VentaBatchPayload,
+  archivo: File,
+): Promise<IngresarVentaBatchResponse> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+  formData.append('venta', JSON.stringify(venta));
+
+  const { data } = await httpClient.post<IngresarVentaBatchResponse>(
+    '/ventas-por-lotes',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
   return data;
 }

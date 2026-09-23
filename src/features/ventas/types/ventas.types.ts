@@ -146,3 +146,12 @@ export interface IngresarVentaRequest {
 }
 
 export type IngresarVentaResponse = WithPayload<'idVenta', number>;
+
+export interface VentaBatchPayload {
+  encabezadoVenta: EncabezadoVentaRequest;
+  detalleIngreso: DetalleIngresoRequest;
+  gastosDiarios: GastosDiariosRequest | null;
+}
+
+// Misma forma de respuesta que /ingresar-venta.
+export type IngresarVentaBatchResponse = WithPayload<'idVenta', number>;

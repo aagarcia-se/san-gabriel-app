@@ -4,24 +4,32 @@ import dayjs from 'dayjs';
 import {
   Calendar,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  FileSpreadsheet,
+  ListChecks,
   Plus,
   Trash2,
+  Upload,
   User,
+  X,
 } from 'lucide-react';
 
-import { useIngresarVenta } from '../api/useVentaMutations';
+import { useIngresarVenta, useIngresarVentaBatch } from '../api/useVentaMutations';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { Alert } from '@/shared/ui/Alert';
 import { ButtonSpinner } from '@/shared/ui/ButtonSpinner';
+import { cn } from '@/shared/lib/cn';
 import type { ApiError } from '@/shared/api/httpClient';
 import type { DetalleGastoRequest, TurnoVenta } from '../types/ventas.types';
 import { VentaProductoPicker, VentaProductoStockItem } from '@/shared/ui/components/VentaProductoPicker';
 
 const PASOS = ['Turno', 'Productos', 'Efectivo', 'Gastos', 'Resumen'] as const;
+
+type ModoProductos = 'manual' | 'archivo';
 
 export function IngresoVentaWizard() {
   const { idSucursal: idParam } = useParams<{ idSucursal: string }>();
@@ -38,8 +46,11 @@ export function IngresoVentaWizard() {
   const [paso, setPaso] = useState(0);
 
   const [turno, setTurno] = useState<TurnoVenta>('AM');
+
+  const [modoProductos, setModoProductos] = useState<ModoProductos>('manual');
   const [productos, setProductos] = useState<VentaProductoStockItem[]>([]);
   const [existenciaValida, setExistenciaValida] = useState(true);
+  const [archivo, setArchivo] = useState<File | null>(null);
 
   const [montoIngresado, setMontoIngresado] = useState('');
   const [gastos, setGastos] = useState<DetalleGastoRequest[]>([]);
@@ -48,6 +59,8 @@ export function IngresoVentaWizard() {
   const [pasoError, setPasoError] = useState<string | undefined>();
 
   const ingresarVenta = useIngresarVenta();
+  const ingresarVentaBatch = useIngresarVentaBatch();
+  const isPending = ingresarVenta.isPending || ingresarVentaBatch.isPending;
 
   const productosConSobrante = useMemo(() => productos.filter((p) => p.cantidad > 0), [productos]);
 
@@ -55,10 +68,29 @@ export function IngresoVentaWizard() {
   const montoNum = Number(montoIngresado) || 0;
   const efectivoNeto = montoNum - totalGastos;
 
+  function cambiarModoProductos(modo: ModoProductos) {
+    setModoProductos(modo);
+    setPasoError(undefined);
+    // Cambiar de modo limpia lo capturado en el otro — evita enviar
+    // datos mezclados de ambos caminos por accidente.
+    if (modo === 'manual') {
+      setArchivo(null);
+    } else {
+      setProductos([]);
+      setExistenciaValida(true);
+    }
+  }
+
   function irSiguiente() {
-    if (paso === 1 && !existenciaValida) {
-      setPasoError('Corrige las cantidades que superan la existencia disponible.');
-      return;
+    if (paso === 1) {
+      if (modoProductos === 'manual' && !existenciaValida) {
+        setPasoError('Corrige las cantidades que superan la existencia disponible.');
+        return;
+      }
+      if (modoProductos === 'archivo' && !archivo) {
+        setPasoError('Adjunta el archivo CSV con el detalle de la venta.');
+        return;
+      }
     }
     if (paso === 2 && montoIngresado.trim() === '') {
       setPasoError('Ingresa el monto en efectivo con el que cierras el turno.');
@@ -89,10 +121,49 @@ export function IngresoVentaWizard() {
     setError(undefined);
     const ahora = dayjs();
     const hoy = ahora.format('YYYY-MM-DD');
+    const gastosValidos = gastos.filter((g) => g.detalleGasto.trim() !== '' && g.subTotal > 0);
 
-    // El picker ya entrega la lista COMPLETA (todos los productos con
-    // existencia, incluso los que quedaron en 0) — no hace falta ningún
-    // cruce adicional contra el stock aquí.
+    const encabezadoVenta = {
+      idOrdenProduccion: null,
+      idUsuario,
+      idSucursal,
+      ventaTurno: turno,
+      fechaVenta: hoy,
+      fechaCreacion: hoy,
+      fechaYHoraVenta: ahora.format('YYYY-MM-DD HH:mm:ss'),
+    };
+
+    const detalleIngreso = {
+      montoTotalIngresado: montoNum,
+      fechaIngreso: hoy,
+    };
+
+    const gastosDiarios =
+      gastosValidos.length === 0
+        ? null
+        : {
+            encabezadoGastosDiarios: {
+              idUsuario,
+              montoTotalGasto: gastosValidos.reduce((acc, g) => acc + g.subTotal, 0),
+              fechaIngreso: hoy,
+            },
+            detalleGastosDiarios: gastosValidos,
+          };
+
+    const onSuccess = () => navigate(`/ventas/${idSucursal}`, { replace: true });
+    const onError = (err: unknown) => {
+      setError((err as ApiError).message ?? 'No se pudo registrar la venta.');
+    };
+
+    if (modoProductos === 'archivo') {
+      if (!archivo) return;
+      ingresarVentaBatch.mutate(
+        { venta: { encabezadoVenta, detalleIngreso, gastosDiarios }, archivo },
+        { onSuccess, onError },
+      );
+      return;
+    }
+
     const detalleVenta = productos.map((p) => ({
       idProducto: p.idProducto,
       tipoProduccion: p.tipoProduccion,
@@ -103,42 +174,9 @@ export function IngresoVentaWizard() {
       unidadesNoVendidas: p.cantidad,
     }));
 
-    const gastosValidos = gastos.filter((g) => g.detalleGasto.trim() !== '' && g.subTotal > 0);
-
     ingresarVenta.mutate(
-      {
-        encabezadoVenta: {
-          idOrdenProduccion: null,
-          idUsuario,
-          idSucursal,
-          ventaTurno: turno,
-          fechaVenta: hoy,
-          fechaCreacion: hoy,
-          fechaYHoraVenta: ahora.format('YYYY-MM-DD HH:mm:ss'),
-        },
-        detalleVenta,
-        detalleIngreso: {
-          montoTotalIngresado: montoNum,
-          fechaIngreso: hoy,
-        },
-        gastosDiarios:
-          gastosValidos.length === 0
-            ? null
-            : {
-                encabezadoGastosDiarios: {
-                  idUsuario,
-                  montoTotalGasto: gastosValidos.reduce((acc, g) => acc + g.subTotal, 0),
-                  fechaIngreso: hoy,
-                },
-                detalleGastosDiarios: gastosValidos,
-              },
-      },
-      {
-        onSuccess: () => navigate(`/ventas/${idSucursal}`, { replace: true }),
-        onError: (err : unknown) => {
-          setError((err as ApiError).message ?? 'No se pudo registrar la venta.');
-        },
-      },
+      { encabezadoVenta, detalleVenta, detalleIngreso, gastosDiarios },
+      { onSuccess, onError },
     );
   }
 
@@ -154,17 +192,18 @@ export function IngresoVentaWizard() {
         {PASOS.map((label, index) => (
           <div key={label} className="flex shrink-0 items-center gap-2">
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+              className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
                 index < paso
                   ? 'bg-brand-500 text-white'
                   : index === paso
                     ? 'bg-brand-500/10 text-brand-600 ring-2 ring-brand-500 dark:text-brand-400'
-                    : 'bg-surface-2 text-muted'
-              }`}
+                    : 'bg-surface-2 text-muted',
+              )}
             >
               {index < paso ? <Check className="h-4 w-4" /> : index + 1}
             </div>
-            <span className={`text-sm font-medium ${index <= paso ? 'text-ink' : 'text-muted'}`}>
+            <span className={cn('text-sm font-medium', index <= paso ? 'text-ink' : 'text-muted')}>
               {label}
             </span>
             {index < PASOS.length - 1 && <div className="h-px w-6 bg-line" />}
@@ -182,12 +221,13 @@ export function IngresoVentaWizard() {
                   key={t}
                   type="button"
                   onClick={() => setTurno(t)}
-                  disabled={ingresarVenta.isPending}
-                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  disabled={isPending}
+                  className={cn(
+                    'flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
                     turno === t
                       ? 'border-brand-500 bg-brand-500/10 text-brand-600 dark:text-brand-400'
-                      : 'border-line text-muted hover:bg-surface-2 hover:text-ink'
-                  }`}
+                      : 'border-line text-muted hover:bg-surface-2 hover:text-ink',
+                  )}
                 >
                   {t}
                 </button>
@@ -221,14 +261,52 @@ export function IngresoVentaWizard() {
       )}
 
       {paso === 1 && (
-        <VentaProductoPicker
-          idSucursal={idSucursal}
-          fecha={fechaHoy}
-          value={productos}
-          onChange={setProductos}
-          disabled={ingresarVenta.isPending}
-          onValidezCambio={setExistenciaValida}
-        />
+        <div className="space-y-4">
+          {/* Selector de modo de captura */}
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-line bg-surface-2 p-1">
+            <button
+              type="button"
+              onClick={() => cambiarModoProductos('manual')}
+              disabled={isPending}
+              className={cn(
+                'flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors',
+                modoProductos === 'manual'
+                  ? 'bg-surface text-ink shadow-sm'
+                  : 'text-muted hover:text-ink',
+              )}
+            >
+              <ListChecks className="h-4 w-4" />
+              Manual
+            </button>
+            <button
+              type="button"
+              onClick={() => cambiarModoProductos('archivo')}
+              disabled={isPending}
+              className={cn(
+                'flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors',
+                modoProductos === 'archivo'
+                  ? 'bg-surface text-ink shadow-sm'
+                  : 'text-muted hover:text-ink',
+              )}
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              Cargar archivo
+            </button>
+          </div>
+
+          {modoProductos === 'manual' ? (
+            <VentaProductoPicker
+              idSucursal={idSucursal}
+              fecha={fechaHoy}
+              value={productos}
+              onChange={setProductos}
+              disabled={isPending}
+              onValidezCambio={setExistenciaValida}
+            />
+          ) : (
+            <ArchivoVentaUpload archivo={archivo} onChange={setArchivo} disabled={isPending} />
+          )}
+        </div>
       )}
 
       {paso === 2 && (
@@ -243,7 +321,7 @@ export function IngresoVentaWizard() {
             step="0.01"
             value={montoIngresado}
             onChange={(e) => setMontoIngresado(e.target.value)}
-            disabled={ingresarVenta.isPending}
+            disabled={isPending}
             placeholder="Q0.00"
             className="input"
           />
@@ -260,7 +338,7 @@ export function IngresoVentaWizard() {
             <button
               type="button"
               onClick={agregarGasto}
-              disabled={ingresarVenta.isPending}
+              disabled={isPending}
               className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 transition-colors hover:text-brand-500 dark:text-brand-400"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -281,7 +359,7 @@ export function IngresoVentaWizard() {
                 placeholder="Descripción del gasto"
                 value={gasto.detalleGasto}
                 onChange={(e) => actualizarGasto(index, { detalleGasto: e.target.value })}
-                disabled={ingresarVenta.isPending}
+                disabled={isPending}
                 className="input flex-1"
               />
               <input
@@ -291,13 +369,13 @@ export function IngresoVentaWizard() {
                 placeholder="Q0.00"
                 value={gasto.subTotal || ''}
                 onChange={(e) => actualizarGasto(index, { subTotal: Number(e.target.value) || 0 })}
-                disabled={ingresarVenta.isPending}
+                disabled={isPending}
                 className="input w-28"
               />
               <button
                 type="button"
                 aria-label="Quitar gasto"
-                disabled={ingresarVenta.isPending}
+                disabled={isPending}
                 onClick={() => quitarGasto(index)}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-danger-500/10 hover:text-danger-600 dark:hover:text-danger-400"
               >
@@ -311,8 +389,16 @@ export function IngresoVentaWizard() {
       {paso === 4 && (
         <div className="space-y-3">
           <div className="card space-y-3">
-            <h2 className="text-sm font-medium text-ink/80">Productos con sobrante</h2>
-            {productosConSobrante.length === 0 ? (
+            <h2 className="text-sm font-medium text-ink/80">Productos</h2>
+            {modoProductos === 'archivo' ? (
+              <div className="flex items-center gap-3 rounded-lg bg-success-500/10 px-3 py-2.5 text-sm text-success-600 dark:text-success-400">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium">Carga desde archivo</p>
+                  <p className="truncate text-xs opacity-80">{archivo?.name}</p>
+                </div>
+              </div>
+            ) : productosConSobrante.length === 0 ? (
               <p className="rounded-lg bg-success-500/10 px-3 py-2 text-sm text-success-600 dark:text-success-400">
                 Todos los productos se vendieron por completo.
               </p>
@@ -366,7 +452,7 @@ export function IngresoVentaWizard() {
           <button
             type="button"
             onClick={irAtras}
-            disabled={paso === 0 || ingresarVenta.isPending}
+            disabled={paso === 0 || isPending}
             className="btn-secondary disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -379,18 +465,74 @@ export function IngresoVentaWizard() {
               <ChevronRight className="h-4 w-4" />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleConfirmar}
-              disabled={ingresarVenta.isPending}
-              className="btn-primary"
-            >
-              {ingresarVenta.isPending && <ButtonSpinner />}
-              {ingresarVenta.isPending ? 'Guardando…' : 'Confirmar venta'}
+            <button type="button" onClick={handleConfirmar} disabled={isPending} className="btn-primary">
+              {isPending && <ButtonSpinner />}
+              {isPending ? 'Guardando…' : 'Confirmar venta'}
             </button>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   CARGA DE ARCHIVO — reemplaza al picker cuando el modo es "archivo"
+   ========================================================================== */
+
+function ArchivoVentaUpload({
+  archivo,
+  onChange,
+  disabled,
+}: {
+  archivo: File | null;
+  onChange: (archivo: File | null) => void;
+  disabled?: boolean;
+}) {
+  if (archivo) {
+    return (
+      <div className="flex items-center gap-3 rounded-xl border border-success-500/40 bg-success-500/10 px-4 py-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success-500/15 text-success-600 dark:text-success-400">
+          <CheckCircle2 className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-success-700 dark:text-success-400">
+            {archivo.name}
+          </p>
+          <p className="text-xs text-success-600/80 dark:text-success-400/70">
+            Archivo cargado correctamente
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label="Quitar archivo"
+          disabled={disabled}
+          onClick={() => onChange(null)}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-success-600 transition-colors hover:bg-success-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:text-success-400"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor="archivoVenta"
+        className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-line px-4 py-6 text-sm text-muted transition-colors hover:bg-surface-2"
+      >
+        <Upload className="h-5 w-5 shrink-0" />
+        <span>Selecciona el archivo CSV con el detalle de la venta</span>
+      </label>
+      <input
+        id="archivoVenta"
+        type="file"
+        accept=".csv"
+        className="hidden"
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
     </div>
   );
 }
