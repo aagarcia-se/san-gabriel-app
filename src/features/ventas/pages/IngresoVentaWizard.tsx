@@ -88,7 +88,7 @@ export function IngresoVentaWizard() {
         return;
       }
       if (modoProductos === 'archivo' && !archivo) {
-        setPasoError('Adjunta el archivo CSV con el detalle de la venta.');
+        setPasoError('Adjunta el archivo XLSX con el detalle de la venta.');
         return;
       }
     }
@@ -523,12 +523,12 @@ function ArchivoVentaUpload({
         className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-line px-4 py-6 text-sm text-muted transition-colors hover:bg-surface-2"
       >
         <Upload className="h-5 w-5 shrink-0" />
-        <span>Selecciona el archivo CSV con el detalle de la venta</span>
+        <span>Selecciona el archivo XLSX con el detalle de la venta</span>
       </label>
       <input
         id="archivoVenta"
         type="file"
-        accept=".csv"
+        accept=".xlsx"
         className="hidden"
         disabled={disabled}
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}

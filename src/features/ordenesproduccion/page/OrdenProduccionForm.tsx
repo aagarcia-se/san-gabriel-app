@@ -32,15 +32,14 @@ const EMPTY_VALUES: OrdenProduccionFormValues = {
   archivo: null,
 };
 
-function esArchivoCsv(file: File): boolean {
-  // Algunos SO/navegadores no setean un mimeType consistente para CSV,
-  // así que validamos por extensión y, si existe, por mimeType.
-  const tieneExtensionCsv = file.name.toLowerCase().endsWith('.csv');
+function esArchivoXlsx(file: File): boolean {
+  const tieneExtensionXlsx = file.name.toLowerCase().endsWith('.xlsx');
+
   const mimeValido =
     file.type === '' ||
-    file.type === 'text/csv' ||
-    file.type === 'application/vnd.ms-excel';
-  return tieneExtensionCsv && mimeValido;
+    file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+  return tieneExtensionXlsx && mimeValido;
 }
 
 export function OrdenProduccionForm({
@@ -74,8 +73,8 @@ export function OrdenProduccionForm({
       setField('archivo', null);
       return;
     }
-    if (!esArchivoCsv(file)) {
-      setArchivoError('Solo se permiten archivos con extensión .csv');
+    if (!esArchivoXlsx(file)) {
+      setArchivoError('Solo se permiten archivos con extensión .xlsx');
       return;
     }
     setArchivoError(undefined);
@@ -131,7 +130,7 @@ export function OrdenProduccionForm({
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!values.archivo) {
-      setArchivoError('Adjunta el archivo CSV con los productos a producir.');
+      setArchivoError('Adjunta el archivo XLSX con los productos a producir.');
       return;
     }
     setArchivoError(undefined);
@@ -244,7 +243,7 @@ export function OrdenProduccionForm({
 
       <div className="space-y-1.5">
         <label htmlFor="archivo" className="text-sm font-medium text-ink/80">
-          Archivo CSV
+          Archivo XLSX
         </label>
         <label
           htmlFor="archivo"
@@ -282,7 +281,7 @@ export function OrdenProduccionForm({
             <span>Suelta el archivo aquí</span>
           ) : (
             <span>
-              Arrastra el archivo CSV aquí o{' '}
+              Arrastra el archivo XLSX aquí o{' '}
               <span className="font-medium text-brand-600 dark:text-brand-400">
                 haz clic para seleccionarlo
               </span>
@@ -293,7 +292,7 @@ export function OrdenProduccionForm({
           ref={fileInputRef}
           id="archivo"
           type="file"
-          accept=".csv"
+          accept=".xlsx"
           className="hidden"
           disabled={isSubmitting}
           onChange={(e) => {
