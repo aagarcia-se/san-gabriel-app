@@ -641,6 +641,13 @@ function OrdenesEspecialesPorEntregarCard({
 
       </div>
 
+      <Link
+        to="/ordenes-especiales"
+        className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 sm:hidden"
+      >
+        Ver ordenes especiales
+        <ChevronRight className="h-3.5 w-3.5" />
+      </Link>
 
 
     </div>
