@@ -9,7 +9,6 @@ import {
   ClipboardList,
   Gift,
   PackagePlus,
-  Plus,
   Settings,
   ShoppingCart,
 } from 'lucide-react';
